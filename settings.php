@@ -57,7 +57,7 @@ if ($hassiteconfig) {
         new moodle_url(
             '/admin/tool/whoiswho/view/dashboard.php'
         ),
-        'moodle/site:config' // TODO: Update to own capability.
+        'tool/whoiswho:dashboardaccess'
     );
 
     $ADMIN->add('tools', $dashboard);

@@ -32,7 +32,7 @@ defined('MOODLE_INTERNAL') || die;
 $context = context_system::instance();
 
 require_login();
-require_capability('moodle/site:config', $context); // TODO: Update to own capability.
+require_capability('tool/whoiswho:dashboardaccess', $context); // TODO: Update to own capability.
 
 $PAGE->set_url(new moodle_url('/admin/tool/whoiswho/view/dashboard.php'));
 $PAGE->set_context($context);
