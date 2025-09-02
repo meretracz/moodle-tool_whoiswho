@@ -15,31 +15,43 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * EN language file
+ * Helper functions
  *
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @package     tool_whoiswho
+ * @package     moodle-tool_whoiswho
  * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @author      Vincent Cornelis
  **/
 
-// Default.
-$string['pluginname'] = 'Who is who';
+namespace tool_whoiswho;
 
-// Capabilities.
-$string['whoiswho:dashboardaccess'] = 'Dasboard access';
+/**
+ * Class helper
+ *
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @package     moodle-tool_whoiswho
+ * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
+ * @author      Vincent Cornelis
+ **/
+class helper {
 
-// Settings.
-$string['settings:whoiswhoconfig'] = 'Configuration';
-$string['settings:profilefields'] = 'Profile fields';
-$string['settings:profilefields_desc'] = 'Select the profile fields you want to display on the dashboard.';
+    /**
+     * Get profile fields suitable for use in a dropdown menu.
+     *
+     * @return array
+     */
+    public static function get_profile_fields_menu(): array {
+        global $DB;
 
-// External pages.
-$string['externalpage:dashboard'] = 'Dashboard';
+        return $DB->get_records_menu(
+            'user_info_field',
+            null,
+            'name ASC',
+            'id, name'
+        );
 
-// Titles.
-$string['title:dashboard'] = 'Who is who dashboard';
+    }
 
-// Headings.
-$string['heading:dashboard'] = 'Who is who dashboard';
+}

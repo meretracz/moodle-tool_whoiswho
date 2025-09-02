@@ -24,11 +24,20 @@
  * @author      Vincent Cornelis
  **/
 
+use tool_whoiswho\helper;
+
 defined('MOODLE_INTERNAL') || die;
 
 global $ADMIN;
 
 if ($hassiteconfig) {
+
+    $category = new admin_category(
+        'tool_whoiswho',
+        get_string('pluginname', 'tool_whoiswho'),
+    );
+
+    $ADMIN->add('tools', $category);
 
     $settings = new admin_settingpage(
         'tool_whoiswho_settings',
@@ -37,19 +46,19 @@ if ($hassiteconfig) {
 
     if ($ADMIN->fulltree) {
 
-        // TODO: Create some actual settings.
-        $x = new admin_setting_configcheckbox(
-            'tool_whoiswho/enable',
-            'enable',
-            '',
-            0
+        $profilefieldoptions = new admin_setting_configmultiselect(
+            'tool_whoiswho/profilefields',
+            get_string('settings:profilefields', 'tool_whoiswho'),
+            get_string('settings:profilefields_desc', 'tool_whoiswho'),
+            [],
+            helper::get_profile_fields_menu(),
         );
 
-        $settings->add($x);
+        $settings->add($profilefieldoptions);
 
     }
 
-    $ADMIN->add('tools', $settings);
+    $ADMIN->add('tool_whoiswho', $settings);
 
     $dashboard = new admin_externalpage(
         'tool_whoiswho_dashboard',
@@ -60,7 +69,7 @@ if ($hassiteconfig) {
         'tool/whoiswho:dashboardaccess'
     );
 
-    $ADMIN->add('tools', $dashboard);
-
+    $ADMIN->add('tool_whoiswho', $dashboard);
 
 }
+
