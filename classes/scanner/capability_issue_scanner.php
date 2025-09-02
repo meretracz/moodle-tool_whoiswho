@@ -65,7 +65,6 @@ class capability_issue_scanner extends base_scanner {
      * @return void
      */
     protected function perform_scan(): void {
-        global $DB;
 
         // 1) Resolve configuration and scope.
         $resolved = $this->resolve_config();
@@ -139,7 +138,7 @@ class capability_issue_scanner extends base_scanner {
     /**
      * Resolve and normalize configuration and scope into a structured array.
      *
-     * @return array{overlapenabled:bool,conflictenabled:bool,contextid:int|null,userids:array,includeparents:bool,levels:array,overlaponly:bool,initiatedby:int|null,rootctx:?\context}
+     * @return array
      */
     private function resolve_config(): array {
         // 1) Read plugin-level defaults/flags.

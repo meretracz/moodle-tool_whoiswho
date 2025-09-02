@@ -120,6 +120,7 @@ if ($hassiteconfig) {
 
     $ADMIN->add('tool_whoiswho', $dashboard);
 
+    // TODO Check if we need a separate capability for this.
     $issuespage = new admin_externalpage(
         'tool_whoiswho_issues',
         get_string('externalpage:issues', 'tool_whoiswho'),
@@ -127,13 +128,5 @@ if ($hassiteconfig) {
         'tool/whoiswho:dashboardaccess'
     );
     $ADMIN->add('tool_whoiswho', $issuespage);
-
-    $runoverlap = new admin_externalpage(
-        'tool_whoiswho_runoverlap',
-        get_string('externalpage:runoverlap', 'tool_whoiswho'),
-        new moodle_url('/admin/tool/whoiswho/view/run_overlap_scan.php', ['sesskey' => sesskey()]),
-        'tool/whoiswho:dashboardaccess'
-    );
-    $ADMIN->add('tool_whoiswho', $runoverlap);
 
 }

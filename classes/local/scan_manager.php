@@ -135,7 +135,15 @@ class scan_manager {
                 if ($overlapenabled) {
                     foreach ($cxpayload['overlaps'] as $cap => $roleids) {
                         $sets = ['allow' => array_values($roleids), 'prevent' => [], 'prohibit' => []];
-                        [$created] = self::upsert_finding($scanid, $user, $cx->id, $cap, 'cap_overlap', 2, $sets);
+                        [$created] = self::upsert_finding(
+                            $scanid,
+                            $user,
+                            $cx->id,
+                            $cap,
+                            'cap_overlap',
+                            2,
+                            $sets
+                        );
                         $created ? $newfind++ : $updfind++;
                     }
                 }
@@ -189,7 +197,12 @@ class scan_manager {
     ): array {
         global $DB;
 
-        $finger = self::fingerprint($userid, $contextid, $capability, $sets);
+        $finger = self::fingerprint(
+            $userid,
+            $contextid,
+            $capability,
+            $sets
+        );
         $now = time();
 
         $existing = $DB->get_record(
