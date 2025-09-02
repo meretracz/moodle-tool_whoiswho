@@ -29,6 +29,7 @@ $string['pluginname'] = 'Who is who';
 
 // Capabilities.
 $string['whoiswho:dashboardaccess'] = 'Dasboard access';
+$string['whoiswho:receiveconflictnotification'] = 'Receive conflict notifications';
 
 // Setting headings.
 $string['settings:heading:reports'] = 'Report configuration';
@@ -47,3 +48,9 @@ $string['title:dashboard'] = 'Who is who dashboard';
 
 // Headings.
 $string['heading:dashboard'] = 'Who is who dashboard';
+
+// Card Titles.
+$string['issues:dashboard'] = 'Issues';
+$string['users:dashboard'] = 'Users';
+$string['profilefield:dashboard'] = 'profile field';
+$string['overviewlinktitle:dashboard'] = 'More Details';

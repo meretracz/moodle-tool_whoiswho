@@ -2,7 +2,6 @@
 
 Permission Dashboard (Who is who) provides an admin-focused dashboard to help diagnose role/capability assignments and prepare for conflict checks. The initial release scaffolds the UI and settings as a foundation for further features.
 
-* Owner: LdesignMedia.nl — Luuk Verhoeven
 * Development: [Ldesignmedia.nl](https://ldesignmedia.nl/) / [wafaahamdy](https://github.com/wafaahamdy)
 * Min. required: Moodle 4.5
 * Supports PHP: 8.1
