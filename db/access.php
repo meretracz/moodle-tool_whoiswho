@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Capability definitions
  *
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
@@ -24,11 +24,16 @@
  * @author      Vincent Cornelis
  **/
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'tool_whoiswho';
-$plugin->version = 2024090201;
-$plugin->release = '4.5.0';
-$plugin->supported = [405, 405];
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_ALPHA;
+$capabilities = [
+
+    'tool/whoiswho:dashboardaccess' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
+];
