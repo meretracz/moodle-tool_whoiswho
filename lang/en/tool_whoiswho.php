@@ -30,6 +30,10 @@ $string['pluginname'] = 'Who is who';
 // Capabilities.
 $string['whoiswho:dashboardaccess'] = 'Dasboard access';
 
+// Setting headings.
+$string['settings:heading:reports'] = 'Report configuration';
+$string['settings:heading:reports_desc'] = 'Configure options here that will be reflected in the reports.';
+
 // Settings.
 $string['settings:whoiswhoconfig'] = 'Configuration';
 $string['settings:profilefields'] = 'Profile fields';

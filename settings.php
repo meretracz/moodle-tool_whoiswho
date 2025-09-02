@@ -46,6 +46,14 @@ if ($hassiteconfig) {
 
     if ($ADMIN->fulltree) {
 
+        $reportsheading = new admin_setting_heading(
+            'tool_whoiswho/reportsheading',
+            get_string('settings:heading:reports', 'tool_whoiswho'),
+            get_string('settings:heading:reports_desc', 'tool_whoiswho')
+        );
+        $settings->add($reportsheading);
+
+        // Add profilefield options.
         $profilefieldoptions = new admin_setting_configmultiselect(
             'tool_whoiswho/profilefields',
             get_string('settings:profilefields', 'tool_whoiswho'),
@@ -53,7 +61,6 @@ if ($hassiteconfig) {
             [],
             helper::get_profile_fields_menu(),
         );
-
         $settings->add($profilefieldoptions);
 
     }
