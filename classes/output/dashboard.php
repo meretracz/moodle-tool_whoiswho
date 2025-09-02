@@ -50,8 +50,9 @@ class dashboard implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output): array {
 
-        // TODO: Get actual data to send to the dashboard.mustache template.
-        return  $this->get_example_data();
+        return [
+            'items' => $this->get_items(),
+        ];
     }
 
     /**
@@ -59,9 +60,10 @@ class dashboard implements renderable, templatable {
      *
      * @return array
      */
-    public function get_example_data(): array {
-        // return 'This is example data for the dashboard template.';
+    public function get_items(): array {
+        //return 'This is example data for the dashboard template.';
         // Add the Cards
+        // TODO: Get actual data to send to the card.mustache template.
         // first two fields are fixed others will be based on profile field
         $issuelink = new \moodle_url('/admin/tool/whoiswho/view/issues.php');
 
@@ -86,17 +88,15 @@ class dashboard implements renderable, templatable {
             ],
         ];
 
-        return [
-            'items' => array_map(function($item) {
-                return [
-                    'cardheader' => $item['cardheader'],
-                    'cardvalue' => $item['cardvalue'],
-                    'cardicon' => $item['cardicon'],
-                    'overviewurl' => $item['overviewurl']
+        return array_map(function($item) {
+            return [
+                'cardheader' => $item['cardheader'],
+                'cardvalue' => $item['cardvalue'],
+                'cardicon' => $item['cardicon'],
+                'overviewurl' => $item['overviewurl'],
 
-                ];
-            }, $items)
-        ];
+            ];
+        }, $items);
 
     }
 
