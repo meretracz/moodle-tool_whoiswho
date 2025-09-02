@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings configuration for Who is who
+ * Dashboard output class
  *
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
@@ -24,31 +24,17 @@
  * @author      Vincent Cornelis
  **/
 
-defined('MOODLE_INTERNAL') || die;
+namespace tool_whoiswho\output;
 
-global $ADMIN;
-
-if ($hassiteconfig) {
-
-    $settings = new admin_settingpage(
-        'tool_whoiswho_settings',
-        get_string('pluginname', 'tool_whoiswho')
-    );
-
-    if ($ADMIN->fulltree) {
-
-        // TODO: Create some actual settings.
-        $x = new admin_setting_configcheckbox(
-            'tool_whoiswho/enable',
-            'enable',
-            '',
-            0
-        );
-
-        $settings->add($x);
-
-    }
-
-    $ADMIN->add('tools', $settings);
+/**
+ * Class dashboard
+ *
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @package     tool_whoiswho
+ * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
+ * @author      Vincent Cornelis
+ **/
+class dashboard {
 
 }
