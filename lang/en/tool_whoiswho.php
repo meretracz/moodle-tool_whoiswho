@@ -38,3 +38,10 @@ $string['title:dashboard'] = 'Who is who dashboard';
 
 // Headings.
 $string['heading:dashboard'] = 'Who is who dashboard';
+
+// Card Titles
+$string['issues:dashboard'] = 'Issues';
+$string['users:dashboard'] = 'Users';
+$string['profilefield:dashboard'] = 'profile field';
+$string['overviewlinktitle:dashboard'] = 'More Details';
+
