@@ -60,20 +60,33 @@ class dashboard implements renderable, templatable {
      * @return array
      */
     public function get_example_data(): array {
-        //return 'This is example data for the dashboard template.';
+        // return 'This is example data for the dashboard template.';
         // Add the Cards
-        // TODO: Get actual data to send to the card.mustache template.
         // first two fields are fixed others will be based on profile field
-        // replace this URL with one for each detail page
-        $url_to_link = new \moodle_url('/user/profile.php');
+        $issuelink = new \moodle_url('/admin/tool/whoiswho/view/issues.php');
 
         $items = [
-            ['cardheader' => get_string('issues:dashboard', 'tool_whoiswho'),'cardvalue' => '100','cardicon' => 'fa-exclamation-triangle','overviewurl' => $url_to_link->out()],
-            ['cardheader' => get_string('users:dashboard', 'tool_whoiswho'),'cardvalue' => '50','cardicon' => 'fa-users','overviewurl' => ''],
-            ['cardheader' => get_string('profilefield:dashboard', 'tool_whoiswho'),'cardvalue' => '20','cardicon' => 'fa-id-badge','overviewurl' => ''],
+            [
+                'cardheader' => get_string('issues:dashboard', 'tool_whoiswho'),
+                'cardvalue' => '100',
+                'cardicon' => 'fa-exclamation-triangle',
+                'overviewurl' => $issuelink->out(),
+            ],
+            [
+                'cardheader' => get_string('users:dashboard', 'tool_whoiswho'),
+                'cardvalue' => '50',
+                'cardicon' => 'fa-users',
+                'overviewurl' => '',
+            ],
+            [
+                'cardheader' => get_string('profilefield:dashboard', 'tool_whoiswho'),
+                'cardvalue' => '20',
+                'cardicon' => 'fa-id-badge',
+                'overviewurl' => '',
+            ],
         ];
 
-        $templatecard = [
+        return [
             'items' => array_map(function($item) {
                 return [
                     'cardheader' => $item['cardheader'],
@@ -84,8 +97,6 @@ class dashboard implements renderable, templatable {
                 ];
             }, $items)
         ];
-
-        return $templatecard;
 
     }
 

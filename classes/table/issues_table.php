@@ -92,7 +92,9 @@ class issues_table extends table_sql {
             get_string('col:issue', 'tool_whoiswho'),
             get_string('firstname'),
             get_string('lastname'),
-            $this->profilefieldname ? s($this->profilefieldname) : get_string('col:profilefield', 'tool_whoiswho'),
+            $this->profilefieldname
+                ? s($this->profilefieldname)
+                : get_string('col:profilefield', 'tool_whoiswho'),
             get_string('col:roles', 'tool_whoiswho'),
             get_string('col:location', 'tool_whoiswho'),
             get_string('col:action', 'tool_whoiswho'),
@@ -171,6 +173,11 @@ class issues_table extends table_sql {
         global $DB;
         $where = [];
         $params = [];
+
+        // Always hide pure overlaps (same capability allowed by multiple roles).
+        // Requested behavior: "Dont show any capabilities that overlap and has the same value".
+        $where[] = 'f.type <> :excludeoverlap';
+        $params['excludeoverlap'] = 'cap_overlap';
 
         // Fullname filter: match firstname or lastname.
         $fullname = trim((string) ($this->filters['fullname'] ?? ''));
@@ -285,7 +292,13 @@ class issues_table extends table_sql {
             // Try to link to module view if the helper exists.
             if (function_exists('get_coursemodule_from_id')) {
                 try {
-                    $cm = get_coursemodule_from_id(null, (int) $ctx->instanceid, 0, false, IGNORE_MISSING);
+                    $cm = get_coursemodule_from_id(
+                        null,
+                        (int) $ctx->instanceid,
+                        0,
+                        false,
+                        IGNORE_MISSING
+                    );
                     if ($cm && !empty($cm->url)) {
                         $url = $cm->url;
                     }
