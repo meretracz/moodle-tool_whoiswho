@@ -28,3 +28,13 @@
 $string['pluginname'] = 'Who is who';
 
 // Settings.
+$string['settings:whoiswhoconfig'] = 'Who is who configuration';
+
+// External pages.
+$string['externalpage:dashboard'] = 'Who is who dashboard';
+
+// Titles.
+$string['title:dashboard'] = 'Who is who dashboard';
+
+// Headings.
+$string['heading:dashboard'] = 'Who is who dashboard';

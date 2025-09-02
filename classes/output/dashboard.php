@@ -26,6 +26,10 @@
 
 namespace tool_whoiswho\output;
 
+use core\output\renderable;
+use core\output\renderer_base;
+use core\output\templatable;
+
 /**
  * Class dashboard
  *
@@ -35,6 +39,30 @@ namespace tool_whoiswho\output;
  * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @author      Vincent Cornelis
  **/
-class dashboard {
+class dashboard implements renderable, templatable {
+
+    /**
+     * Gather data to export to the mustache template.
+     *
+     * @param renderer_base $output
+     *
+     * @return string[]
+     */
+    public function export_for_template(renderer_base $output): array {
+
+        // TODO: Get actual data to send to the dashboard.mustache template.
+        return [
+            'exampledata' => $this->get_example_data(),
+        ];
+    }
+
+    /**
+     * Example method
+     *
+     * @return string
+     */
+    public function get_example_data(): string {
+        return 'This is example data for the dashboard template.';
+    }
 
 }

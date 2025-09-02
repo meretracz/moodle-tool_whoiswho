@@ -32,7 +32,7 @@ if ($hassiteconfig) {
 
     $settings = new admin_settingpage(
         'tool_whoiswho_settings',
-        get_string('pluginname', 'tool_whoiswho')
+        get_string('settings:whoiswhoconfig', 'tool_whoiswho')
     );
 
     if ($ADMIN->fulltree) {
@@ -50,5 +50,17 @@ if ($hassiteconfig) {
     }
 
     $ADMIN->add('tools', $settings);
+
+    $dashboard = new admin_externalpage(
+        'tool_whoiswho_dashboard',
+        get_string('externalpage:dashboard', 'tool_whoiswho'),
+        new moodle_url(
+            '/admin/tool/whoiswho/view/dashboard.php'
+        ),
+        'moodle/site:config' // TODO: Update to own capability.
+    );
+
+    $ADMIN->add('tools', $dashboard);
+
 
 }

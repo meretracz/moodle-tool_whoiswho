@@ -23,3 +23,27 @@
  * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @author      Vincent Cornelis
  **/
+
+require_once(__DIR__ . '/../../../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
+
+defined('MOODLE_INTERNAL') || die;
+
+$context = context_system::instance();
+
+require_login();
+require_capability('moodle/site:config', $context); // TODO: Update to own capability.
+
+$PAGE->set_url(new moodle_url('/admin/tool/whoiswho/view/dashboard.php'));
+$PAGE->set_context($context);
+$PAGE->set_title(get_string('title:dashboard', 'tool_whoiswho'));
+$PAGE->set_heading(get_string('heading:dashboard', 'tool_whoiswho'));
+
+$page = new \tool_whoiswho\output\dashboard();
+
+// Render the page before any output. Allow for redirects/form submissions easier.
+$rendered = $OUTPUT->render($page);
+
+echo $OUTPUT->header();
+echo $rendered;
+echo $OUTPUT->footer();
