@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLDB PATH="admin/tool/whoiswho/db" VERSION="2025090200" COMMENT="XMLDB file for tool_whoiswho"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://docs.moodle.org/xmldb/xmldb.xsd">
+    <TABLES>
+        <TABLE NAME="tool_whoiswho_scan" COMMENT="Scan executions producing findings">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="startedat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="Start timestamp"/>
+                <FIELD NAME="finishedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="Finish timestamp"/>
+                <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" DEFAULT="queued"/>
+                <FIELD NAME="initiatedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="User id or null"/>
+                <FIELD NAME="scopecontextid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="Optional root context of the scan"/>
+                <FIELD NAME="meta" TYPE="text" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="JSON: versions, counts, durations"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="status_ix" UNIQUE="false" FIELDS="status"/>
+                <INDEX NAME="scope_ix" UNIQUE="false" FIELDS="scopecontextid"/>
+                <INDEX NAME="started_ix" UNIQUE="false" FIELDS="startedat"/>
+            </INDEXES>
+        </TABLE>
+
+        <TABLE NAME="tool_whoiswho_finding" COMMENT="Logical user-based issues (deduped by fingerprint)">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="fingerprint" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="scanid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null"
+                       COMMENT="Scan that first created the finding"/>
+                <FIELD NAME="type" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="cap_conflict, cap_overlap, ..."/>
+                <FIELD NAME="severity" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="capability" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" DEFAULT="null"/>
+                <FIELD NAME="firstseenat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+                <FIELD NAME="lastseenat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+                <FIELD NAME="resolved" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+                <FIELD NAME="resolvedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null"/>
+                <FIELD NAME="resolvedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null"/>
+                <FIELD NAME="details" TYPE="text" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="JSON payload with role maps and extras"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="fingerprint_uk" TYPE="unique" FIELDS="fingerprint"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="user_ctx_ix" UNIQUE="false" FIELDS="userid, contextid"/>
+                <INDEX NAME="type_ix" UNIQUE="false" FIELDS="type"/>
+                <INDEX NAME="resolved_ix" UNIQUE="false" FIELDS="resolved"/>
+                <INDEX NAME="lastseen_ix" UNIQUE="false" FIELDS="lastseenat"/>
+                <INDEX NAME="cap_res_ix" UNIQUE="false" FIELDS="capability, resolved"/>
+            </INDEXES>
+        </TABLE>
+
+        <TABLE NAME="tool_whoiswho_finding_cap" COMMENT="Per-capability role breakdown for quick UI">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="findingid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="roleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="permission" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="CAP_ALLOW/PREVENT/PROHIBIT"/>
+                <FIELD NAME="capname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="label" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="finding_fk" TYPE="foreign" FIELDS="findingid" REFTABLE="tool_whoiswho_finding" REFFIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="finding_ix" UNIQUE="false" FIELDS="findingid"/>
+                <INDEX NAME="cap_ix" UNIQUE="false" FIELDS="capname"/>
+                <INDEX NAME="perm_ix" UNIQUE="false" FIELDS="permission"/>
+            </INDEXES>
+        </TABLE>
+    </TABLES>
+</XMLDB>

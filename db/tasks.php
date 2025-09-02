@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Moodle task definitions
  *
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
@@ -26,9 +26,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_whoiswho';
-$plugin->version = 2025090204;
-$plugin->release = '4.5.1';
-$plugin->supported = [405, 405];
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_ALPHA;
+$tasks = [
+    [
+        'classname' => '\tool_whoiswho\task\scan_scheduled',
+        'blocking'  => 0,
+        'minute'    => 'R',
+        'hour'      => '*',
+        'day'       => '*',
+        'dayofweek' => '*',
+        'month'     => '*',
+    ],
+];

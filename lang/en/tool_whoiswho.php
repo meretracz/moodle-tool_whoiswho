@@ -32,16 +32,36 @@ $string['whoiswho:dashboardaccess'] = 'Dasboard access';
 $string['whoiswho:receiveconflictnotification'] = 'Receive conflict notifications';
 
 // Setting headings.
-$string['settings:heading:reports'] = 'Report configuration';
-$string['settings:heading:reports_desc'] = 'Configure options here that will be reflected in the reports.';
+// (see above Setting headings)
 
 // Settings.
 $string['settings:whoiswhoconfig'] = 'Configuration';
 $string['settings:profilefields'] = 'Profile fields';
 $string['settings:profilefields_desc'] = 'Select the profile fields you want to display on the dashboard.';
+$string['settings:heading:reports'] = 'Report configuration';
+$string['settings:heading:reports_desc'] = 'Configure options here that will be reflected in the reports.';
+
+// Scanner settings.
+$string['settings:heading:scanner'] = 'Scanner options';
+$string['settings:heading:scanner_desc'] = 'Control what the background scans check and where they run.';
+$string['settings:scan_overlap_enabled'] = 'Detect overlapping capabilities';
+$string['settings:scan_overlap_enabled_desc'] = 'Flag when the same capability is ALLOWed by multiple roles in the same context.';
+$string['settings:scan_conflict_enabled'] = 'Detect conflicting capabilities';
+$string['settings:scan_conflict_enabled_desc'] = 'Flag when a capability is both ALLOWed and PREVENT/PROHIBITed by assigned roles.';
+$string['settings:scan_include_parents'] = 'Check parent contexts separately';
+$string['settings:scan_include_parents_desc'] = 'For each user/context pair, also analyse each parent context.';
+$string['settings:scan_contextlevels'] = 'Context levels to scan';
+$string['settings:scan_contextlevels_desc'] = 'Limit scans to these context levels.';
+$string['settings:context:system'] = 'System context';
+$string['settings:context:course'] = 'Course context';
 
 // External pages.
 $string['externalpage:dashboard'] = 'Dashboard';
+$string['externalpage:runoverlap'] = 'Run overlap scan now';
+$string['externalpage:issues'] = 'Issues';
+// New page.
+$string['title:issues'] = 'Issues overview';
+$string['heading:issues'] = 'Issues overview';
 
 // Titles.
 $string['title:dashboard'] = 'Who is who dashboard';
@@ -49,8 +69,50 @@ $string['title:dashboard'] = 'Who is who dashboard';
 // Headings.
 $string['heading:dashboard'] = 'Who is who dashboard';
 
+// Tasks.
+$string['task:scan'] = 'Permission Dashboard: scan for user-based issues';
+// Unified task names.
+$string['task_scheduled_security_scan'] = 'Who is who: scheduled security scan';
+$string['task_adhoc_security_scan'] = 'Who is who: adhoc security scan';
+
+// Scanner names/descriptions.
+$string['capability_scanner'] = 'Core capability risk scanner';
+$string['capability_scanner_desc'] = 'Checks for dangerous core capabilities granted to roles, guests, authenticated users, orphaned capabilities, and context risks.';
+$string['capability_issue_scanner'] = 'User capability overlap/conflict scanner';
+$string['capability_issue_scanner_desc'] = 'Detects overlaps and conflicts at user/context level based on current role assignments and plugin settings.';
+
+// Notices.
+$string['notice:queued_overlap_scan'] = 'Overlap scan queued. It will run shortly via cron.';
+
 // Card Titles.
 $string['issues:dashboard'] = 'Issues';
 $string['users:dashboard'] = 'Users';
 $string['profilefield:dashboard'] = 'profile field';
 $string['overviewlinktitle:dashboard'] = 'More Details';
+
+// Table & filter labels.
+$string['col:issue'] = 'Issue';
+$string['col:profilefield'] = 'Profile field';
+$string['col:roles'] = 'All roles of user';
+$string['col:location'] = 'Location of issue';
+$string['col:action'] = 'Action';
+
+$string['filter:fullname'] = 'Fullname contains';
+$string['filter:context'] = 'Context';
+$string['filter:anycontext'] = 'Any context';
+$string['filter:apply'] = 'Filter';
+
+// Issue labels.
+$string['issue:overlap'] = 'Issue: overlap';
+$string['issue:conflict'] = 'Issue: conflict';
+
+// Actions.
+$string['action:changepermission'] = 'change permission';
+$string['action:changerole'] = 'change role';
+
+// Scanner messages (capability_scanner).
+$string['guest_dangerous_caps'] = 'Guest role has dangerous capabilities assigned';
+$string['auth_user_dangerous_caps'] = 'Authenticated user role has dangerous capabilities assigned';
+$string['orphaned_capability_found'] = 'Capability referenced in role permissions no longer exists';
+$string['context_permission_risk'] = 'Risky permission in non-system context with many users';
+$string['user_override_found'] = 'User capability override detected';

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Scheduled task that executes the whoiswho scan.
  *
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
@@ -24,11 +24,38 @@
  * @author      Vincent Cornelis
  **/
 
+namespace tool_whoiswho\task;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_whoiswho';
-$plugin->version = 2025090204;
-$plugin->release = '4.5.1';
-$plugin->supported = [405, 405];
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_ALPHA;
+/**
+ * Scheduled task that executes the whoiswho scan.
+ *
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @package     tool_whoiswho
+ * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
+ * @author      Vincent Cornelis
+ **/
+class scan_scheduled extends \core\task\scheduled_task {
+
+    /**
+     * Retrieves the name of the task.
+     *
+     * @return string The localized name of the task as defined in the language pack.
+     */
+    public function get_name(): string {
+        return get_string('task:scan', 'tool_whoiswho');
+    }
+
+    /**
+     *
+     * Executes the scan process by invoking the scan manager's run method.
+     *
+     * @return void
+     */
+    public function execute(): void {
+        \tool_whoiswho\local\scan_manager::run();
+    }
+
+}

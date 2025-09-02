@@ -63,6 +63,48 @@ if ($hassiteconfig) {
         );
         $settings->add($profilefieldoptions);
 
+        // Scanner options.
+        $scannerheading = new admin_setting_heading(
+            'tool_whoiswho/scannerheading',
+            get_string('settings:heading:scanner', 'tool_whoiswho'),
+            get_string('settings:heading:scanner_desc', 'tool_whoiswho')
+        );
+        $settings->add($scannerheading);
+
+        $settings->add(new admin_setting_configcheckbox(
+            'tool_whoiswho/scan_overlap_enabled',
+            get_string('settings:scan_overlap_enabled', 'tool_whoiswho'),
+            get_string('settings:scan_overlap_enabled_desc', 'tool_whoiswho'),
+            1
+        ));
+
+        $settings->add(new admin_setting_configcheckbox(
+            'tool_whoiswho/scan_conflict_enabled',
+            get_string('settings:scan_conflict_enabled', 'tool_whoiswho'),
+            get_string('settings:scan_conflict_enabled_desc', 'tool_whoiswho'),
+            1
+        ));
+
+        $settings->add(new admin_setting_configcheckbox(
+            'tool_whoiswho/scan_include_parents',
+            get_string('settings:scan_include_parents', 'tool_whoiswho'),
+            get_string('settings:scan_include_parents_desc', 'tool_whoiswho'),
+            0
+        ));
+
+        $contextoptions = [
+            CONTEXT_SYSTEM => get_string('settings:context:system', 'tool_whoiswho'),
+            CONTEXT_COURSE => get_string('settings:context:course', 'tool_whoiswho'),
+        ];
+
+        $settings->add(new admin_setting_configmultiselect(
+            'tool_whoiswho/scan_contextlevels',
+            get_string('settings:scan_contextlevels', 'tool_whoiswho'),
+            get_string('settings:scan_contextlevels_desc', 'tool_whoiswho'),
+            [CONTEXT_SYSTEM, CONTEXT_COURSE],
+            $contextoptions
+        ));
+
     }
 
     $ADMIN->add('tool_whoiswho', $settings);
@@ -78,5 +120,20 @@ if ($hassiteconfig) {
 
     $ADMIN->add('tool_whoiswho', $dashboard);
 
-}
+    $issuespage = new admin_externalpage(
+        'tool_whoiswho_issues',
+        get_string('externalpage:issues', 'tool_whoiswho'),
+        new moodle_url('/admin/tool/whoiswho/view/issues.php'),
+        'tool/whoiswho:dashboardaccess'
+    );
+    $ADMIN->add('tool_whoiswho', $issuespage);
 
+    $runoverlap = new admin_externalpage(
+        'tool_whoiswho_runoverlap',
+        get_string('externalpage:runoverlap', 'tool_whoiswho'),
+        new moodle_url('/admin/tool/whoiswho/view/run_overlap_scan.php', ['sesskey' => sesskey()]),
+        'tool/whoiswho:dashboardaccess'
+    );
+    $ADMIN->add('tool_whoiswho', $runoverlap);
+
+}
