@@ -19,7 +19,7 @@
  *
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @package     moodle-tool_whoiswho
+ * @package     tool_whoiswho
  * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @author      Vincent Cornelis
  **/
@@ -31,7 +31,7 @@ namespace tool_whoiswho;
  *
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @package     moodle-tool_whoiswho
+ * @package     tool_whoiswho
  * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @author      Vincent Cornelis
  **/
