@@ -1,0 +1,26 @@
+name: "TODO Scanner"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  scan-todos:
+    name: "Scan for TODO comments"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v3
+
+      - name: "Find TODO comments"
+        run: |
+          echo "Scanning for TODO comments..."
+          grep -rn --exclude-dir={.git,node_modules,vendor,.github,build} "TODO" . || echo "No TODOs found"
+          TODO_COUNT=$(grep -rn --exclude-dir={.git,node_modules,vendor,.github,build} "TODO" . | tee /dev/tty | wc -l)
+          if [ "$TODO_COUNT" -gt 0 ]; then
+            echo "::error:: Found $TODO_COUNT TODO comments. Please resolve them before merging."
+            exit 1
+          fi
