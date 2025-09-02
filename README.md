@@ -1,8 +1,6 @@
 ## Moodle admin tool for viewing users their roles, capabilities, and conflicting capabilities
 
-In brief, `block_mycoursesltc` gives the user an overview of their active courses.
-
-This block is developed by Ldesign Media on the instructions and insights of LTNC B.V.
+Diagnose and fix role/capability issues in one place. The Permission Dashboard scans your site for overlapping capabilities, users with multiple roles in the same context, and common security red flags then helps you resolve them fast.
 
 * Owner: TODO
 * Development: [Ldesignmedia.nl](https://ldesignmedia.nl/) / [wafaahamdy](https://github.com/wafaahamdy)
