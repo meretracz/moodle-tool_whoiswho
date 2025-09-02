@@ -61,10 +61,11 @@ class dashboard implements renderable, templatable {
      * @return array
      */
     public function get_items(): array {
-        //return 'This is example data for the dashboard template.';
+
         // Add the Cards
         // TODO: Get actual data to send to the card.mustache template.
         // first two fields are fixed others will be based on profile field
+
         $issuelink = new \moodle_url('/admin/tool/whoiswho/view/issues.php');
 
         $items = [
