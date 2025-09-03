@@ -24,7 +24,7 @@
  * @author      Vincent Cornelis
  **/
 
-// phpcs:disable moodle.Files.**Lang**FilesOrdering.UnexpectedComment
+// phpcs:disable moodle.Files.LangFilesOrdering.UnexpectedComment
 // phpcs:disable moodle.Files.LangFilesOrdering.IncorrectOrder
 
 // Default.
