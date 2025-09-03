@@ -183,9 +183,12 @@ class issues_table extends table_sql {
         $fullname = trim((string) ($this->filters['fullname'] ?? ''));
         if ($fullname !== '') {
             $like = '%' . $fullname . '%';
-            $where[] = '(' . $DB->sql_like('u.firstname', ':fn', false) . ' OR ' . $DB->sql_like('u.lastname', ':ln', false) . ')';
+            $where[] = '(' . $DB->sql_like(
+                    $DB->sql_concat('u.firstname', '" "', 'u.lastname'),
+                    ':fn',
+                    false
+                ) . ')';
             $params['fn'] = $like;
-            $params['ln'] = $like;
         }
 
         // Context level filter.
