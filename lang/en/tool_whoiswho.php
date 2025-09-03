@@ -148,3 +148,4 @@ $string['notice:issue_permissions_updated'] = 'Permissions updated and issues re
 $string['form:effective'] = 'Effective in context';
 $string['status:pending'] = 'Pending';
 $string['status:resolved'] = 'Resolved';
+$string['status:ignored'] = 'Ignored';

@@ -125,7 +125,7 @@ if ($data = $mform->get_data()) {
     $newstatus = isset($data->status) ? (string) $data->status : 'pending';
     $updated = (object) [
         'id' => $finding->id,
-        'issuestate' => in_array($newstatus, ['resolved', 'pending'], true) ? $newstatus : 'pending',
+        'issuestate' => in_array($newstatus, ['resolved', 'pending', 'ignored'], true) ? $newstatus : 'pending',
         'resolved' => $newstatus === 'resolved' ? 1 : 0,
         'resolvedby' => $newstatus === 'resolved' ? $USER->id : null,
         'resolvedat' => $newstatus === 'resolved' ? time() : null,

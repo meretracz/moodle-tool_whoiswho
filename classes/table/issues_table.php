@@ -102,17 +102,19 @@ class issues_table extends table_sql {
         }
 
         // Add remaining columns.
+        $columns[] = 'status';
         $columns[] = 'roles';
         $columns[] = 'location';
         $columns[] = 'action';
 
+        $headers[] = get_string('col:status', 'tool_whoiswho');
         $headers[] = get_string('col:roles', 'tool_whoiswho');
         $headers[] = get_string('col:location', 'tool_whoiswho');
         $headers[] = get_string('col:action', 'tool_whoiswho');
         $this->define_columns($columns);
         $this->define_headers($headers);
 
-        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, '
+        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, f.issuestate, '
             . 'u.id AS uid, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, '
             . 'u.middlename, u.alternatename, '
             . 'c.contextlevel, c.instanceid';
@@ -295,10 +297,11 @@ class issues_table extends table_sql {
      */
     public function col_status(object $row): string {
         $status = (string) ($row->issuestate ?? 'pending');
-        if ($status === 'resolved') {
-            return get_string('status:resolved', 'tool_whoiswho');
-        }
-        return get_string('status:pending', 'tool_whoiswho');
+        return match ($status) {
+            'resolved' => get_string('status:resolved', 'tool_whoiswho'),
+            'ignored' => get_string('status:ignored', 'tool_whoiswho'),
+            default => get_string('status:pending', 'tool_whoiswho'),
+        };
     }
 
     /**
