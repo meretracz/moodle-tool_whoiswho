@@ -37,8 +37,10 @@ admin_externalpage_setup('tool_whoiswho_dashboard');
 $fullname = optional_param('fullname', '', PARAM_TEXT);
 $contextlevel = optional_param('contextlevel', 0, PARAM_INT);
 $userid = optional_param('userid', 0, PARAM_INT);
+
 // Accept comma-separated list of user IDs for filtering.
 $useridscsv = optional_param('userids', '', PARAM_SEQUENCE);
+
 // Normalize to integer array for internal use.
 $userids = [];
 if ($useridscsv !== '') {
@@ -80,7 +82,7 @@ if ($userid > 0) {
     $filters['userid'] = $userid;
 }
 if (!empty($userids)) {
-    $filters['userids'] = $userids; // array for table filtering
+    $filters['userids'] = $userids;
 }
 
 // Create output object.
