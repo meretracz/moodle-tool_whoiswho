@@ -279,13 +279,12 @@ class capability_issue_scanner extends base_scanner {
     /**
      * Processes capability conflicts if conflict processing is enabled and overlap-only mode is disabled.
      *
-     * @param array $cxpayload      The payload containing conflict data.
-     * @param int $userid           The ID of the user being processed.
-     * @param \context $cx          The context in which the conflicts are evaluated.
-     * @param bool $conflictenabled Determines whether conflict processing is enabled.
-     * @param bool $overlaponly     Indicates whether only overlaps should be processed, bypassing conflicts.
-     * @param array &$counters      Reference to an array tracking counts for new findings, updates, and issues.
-     *
+     * @param array $cxpayload       The payload containing conflict data.
+     * @param int $userid            The ID of the user being processed.
+     * @param \context $cx           The context in which the conflicts are evaluated.
+     * @param bool $conflictenabled  Determines whether conflict processing is enabled.
+     * @param bool $overlaponly      Indicates whether only overlaps should be processed, bypassing conflicts.
+     * @param array $counters        Reference to an array tracking counts for new findings, updates, and issues.
      * @return void
      */
     private function process_conflicts(
@@ -328,12 +327,11 @@ class capability_issue_scanner extends base_scanner {
     /**
      * Processes capability overlaps for the provided context and updates findings.
      *
-     * @param array $cxpayload     The payload containing overlap data.
-     * @param int $userid          The ID of the user initiating the process.
-     * @param \context $cx         The context in which the overlaps are being processed.
-     * @param bool $overlapenabled Indicates whether overlap processing is enabled.
-     * @param array &$counters     Reference to an array used to track counters for findings and issues.
-     *
+     * @param array $cxpayload      The payload containing overlap data.
+     * @param int $userid           The ID of the user initiating the process.
+     * @param \context $cx          The context in which the overlaps are being processed.
+     * @param bool $overlapenabled  Indicates whether overlap processing is enabled.
+     * @param array $counters       Reference to an array used to track counters for findings and issues.
      * @return void
      */
     private function process_overlaps(
