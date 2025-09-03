@@ -59,7 +59,15 @@ class issues_filter_form extends moodleform {
         $mform->addElement('select', 'contextlevel', get_string('filter:context', 'tool_whoiswho'), $contextoptions);
         $mform->setType('contextlevel', PARAM_INT);
 
+        $statusoptions = [
+            '' => get_string('filter:status:any', 'tool_whoiswho'),
+            'pending' => get_string('status:pending', 'tool_whoiswho'),
+            'resolved' => get_string('status:resolved', 'tool_whoiswho'),
+            'ignored' => get_string('status:ignored', 'tool_whoiswho'),
+        ];
+        $mform->addElement('select', 'status', get_string('filter:status', 'tool_whoiswho'), $statusoptions);
+        $mform->setType('status', PARAM_ALPHA);
+
         $this->add_action_buttons(false, get_string('filter:apply', 'tool_whoiswho'));
     }
 }
-

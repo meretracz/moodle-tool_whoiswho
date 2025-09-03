@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XMLDB PATH="admin/tool/whoiswho/db" VERSION="2025090200" COMMENT="XMLDB file for tool_whoiswho"
+<XMLDB PATH="admin/tool/whoiswho/db" VERSION="2025090301" COMMENT="XMLDB file for tool_whoiswho"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="https://docs.moodle.org/xmldb/xmldb.xsd">
     <TABLES>
@@ -34,6 +34,7 @@
                 <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="capability" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="issuestate" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" DEFAULT="pending" COMMENT="Lifecycle state: pending|resolved"/>
                 <FIELD NAME="firstseenat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="lastseenat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="resolved" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
@@ -51,6 +52,7 @@
                 <INDEX NAME="resolved_ix" UNIQUE="false" FIELDS="resolved"/>
                 <INDEX NAME="lastseen_ix" UNIQUE="false" FIELDS="lastseenat"/>
                 <INDEX NAME="cap_res_ix" UNIQUE="false" FIELDS="capability, resolved"/>
+                <INDEX NAME="issuestate_ix" UNIQUE="false" FIELDS="issuestate"/>
             </INDEXES>
         </TABLE>
 

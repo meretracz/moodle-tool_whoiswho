@@ -130,6 +130,22 @@ function xmldb_tool_whoiswho_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2025090300, 'tool', 'whoiswho');
     }
 
+    if ($oldversion < 2025090303) {
+        $table = new xmldb_table('tool_whoiswho_finding');
+        $field = new xmldb_field('issuestate', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'pending', 'capability');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $index = new xmldb_index('issuestate_ix', XMLDB_INDEX_NOTUNIQUE, ['issuestate']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        // Backfill existing rows: resolved=1 -> resolved state, else pending.
+        $DB->execute("UPDATE {tool_whoiswho_finding} SET issuestate = CASE 
+                               WHEN resolved = 1 THEN 'resolved' ELSE 'pending' END WHERE issuestate IS NULL OR issuestate = ''");
+
+        upgrade_plugin_savepoint(true, 2025090303, 'tool', 'whoiswho');
+    }
+
     return true;
 }
-

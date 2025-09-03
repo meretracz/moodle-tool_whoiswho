@@ -209,8 +209,16 @@ class scan_manager {
         );
 
         if ($existing) {
+            $keepmanual = property_exists($existing, 'issuestate') && in_array($existing->issuestate, ['resolved', 'ignored'], true);
             $existing->lastseenat = $now;
-            $existing->resolved = 0;
+            if ($keepmanual) {
+                // Honor manual resolution/ignored: keep flags and state.
+            } else {
+                $existing->resolved = 0;
+                if (property_exists($existing, 'issuestate')) {
+                    $existing->issuestate = 'pending';
+                }
+            }
             $DB->update_record('tool_whoiswho_finding', $existing);
             $findingid = (int) $existing->id;
 
@@ -235,6 +243,7 @@ class scan_manager {
             'userid' => $userid,
             'contextid' => $contextid,
             'capability' => $capability,
+            'issuestate' => 'pending',
             'firstseenat' => $now,
             'lastseenat' => $now,
             'resolved' => 0,

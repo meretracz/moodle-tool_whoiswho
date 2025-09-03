@@ -92,7 +92,9 @@ $string['capability_issue_scanner_desc'] = 'Detects overlaps and conflicts at us
 
 // Notices.
 $string['notice:queued_overlap_scan'] = 'Overlap scan queued. It will run shortly via cron.';
-$string['notice:queued_user_scan'] = 'User recheck queued. It will run shortly via cron.';
+$string['notice:queued_user_scan'] = 'User recheck queued. It will run shortly via cron.'; // Legacy
+$string['notice:completed_user_scan'] = 'User recheck completed.';
+$string['notice:failed_user_scan'] = 'User recheck failed: {$a}';
 
 // Card Titles.
 $string['issues:dashboard'] = 'Issues';
@@ -116,10 +118,13 @@ $string['col:roles'] = 'All roles of user';
 $string['col:location'] = 'Location of issue';
 $string['col:action'] = 'Action';
 $string['col:allcapabilities'] = 'All Capabilities';
+$string['col:status'] = 'Status';
 
 $string['filter:fullname'] = 'Fullname contains';
 $string['filter:context'] = 'Context';
 $string['filter:anycontext'] = 'Any context';
+$string['filter:status'] = 'Status';
+$string['filter:status:any'] = 'Any status';
 $string['filter:apply'] = 'Filter';
 
 // Issue labels.
@@ -137,3 +142,9 @@ $string['auth_user_dangerous_caps'] = 'Authenticated user role has dangerous cap
 $string['orphaned_capability_found'] = 'Capability referenced in role permissions no longer exists';
 $string['context_permission_risk'] = 'Risky permission in non-system context with many users';
 $string['user_override_found'] = 'User capability override detected';
+$string['title:fix_issue'] = 'Fix issue permissions';
+$string['heading:fix_issue'] = 'Fix issue permissions';
+$string['notice:issue_permissions_updated'] = 'Permissions updated and issues rechecked.';
+$string['form:effective'] = 'Effective in context';
+$string['status:pending'] = 'Pending';
+$string['status:resolved'] = 'Resolved';

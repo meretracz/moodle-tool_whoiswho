@@ -52,6 +52,9 @@ class issues_table extends table_sql {
     /** @var array Filter values */
     protected array $filters = [];
 
+    /** @var bool Whether DB has status column */
+    protected bool $hasstatus = true;
+
     /**
      * Constructor for the table class.
      *
@@ -63,6 +66,16 @@ class issues_table extends table_sql {
     public function __construct(string $uniqueid, array $filters = []) {
         parent::__construct($uniqueid);
         $this->filters = $filters;
+        // Detect presence of status column (site may not be upgraded yet).
+        try {
+            global $DB;
+            $dbman = $DB->get_manager();
+            $table = new \xmldb_table('tool_whoiswho_finding');
+            $field = new \xmldb_field('status');
+            $this->hasstatus = $dbman->field_exists($table, $field);
+        } catch (\Throwable $e) {
+            $this->hasstatus = false;
+        }
         $this->init_profilefield();
         $this->define_columns_and_headers();
         $this->set_attribute('class', 'generaltable whoiswho-issues-table');
@@ -85,6 +98,7 @@ class issues_table extends table_sql {
             'firstname',
             'lastname',
             'profilefield',
+            'status',
             'roles',
             'location',
             'action',
@@ -98,6 +112,7 @@ class issues_table extends table_sql {
             $this->profilefieldname
                 ? s($this->profilefieldname)
                 : get_string('col:profilefield', 'tool_whoiswho'),
+            get_string('col:status', 'tool_whoiswho'),
             get_string('col:roles', 'tool_whoiswho'),
             get_string('col:location', 'tool_whoiswho'),
             get_string('col:action', 'tool_whoiswho'),
@@ -105,7 +120,7 @@ class issues_table extends table_sql {
         $this->define_columns($columns);
         $this->define_headers($headers);
 
-        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, '
+        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, f.issuestate, '
             . 'u.firstname, u.lastname, u.id AS uid, '
             . 'c.contextlevel, c.instanceid';
 
@@ -199,6 +214,13 @@ class issues_table extends table_sql {
             $params['cxlevel'] = $contextlevel;
         }
 
+        // Status filter.
+        $status = trim((string) ($this->filters['status'] ?? ''));
+        if ($status !== '') {
+            $where[] = 'f.issuestate = :fstatus';
+            $params['fstatus'] = $status;
+        }
+
         // User ID filter.
         $userid = (int) ($this->filters['userid'] ?? 0);
         if ($userid > 0) {
@@ -246,6 +268,20 @@ class issues_table extends table_sql {
         }
 
         return html_writer::tag('span', '-');
+    }
+
+    /**
+     * Render status label for a finding.
+     *
+     * @param object $row Table row data containing status.
+     * @return string
+     */
+    public function col_status(object $row): string {
+        $status = (string) ($row->issuestate ?? 'pending');
+        if ($status === 'resolved') {
+            return get_string('status:resolved', 'tool_whoiswho');
+        }
+        return get_string('status:pending', 'tool_whoiswho');
     }
 
     /**
@@ -340,9 +376,13 @@ class issues_table extends table_sql {
      * @return string A concatenated string of HTML links for changing permissions and roles.
      */
     public function col_action(object $row): string {
+        global $OUTPUT;
         $ctxid = (int) $row->contextid;
 
-        $permurl = new moodle_url('/admin/roles/override.php', ['contextid' => $ctxid]);
+        $fixurl = new moodle_url('/admin/tool/whoiswho/view/fix_issue.php', [
+            'id' => (int) $row->id,
+            'returnurl' => (new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters))->out_as_local_url(false),
+        ]);
         $roleurl = new moodle_url('/admin/roles/assign.php', ['contextid' => $ctxid]);
         $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters);
         $recheckurl = new moodle_url('/admin/tool/whoiswho/view/recheck_user.php', [
@@ -352,9 +392,13 @@ class issues_table extends table_sql {
         ]);
 
         $out = [];
-        $out[] = html_writer::link($permurl, '[' . get_string('action:changepermission', 'tool_whoiswho') . ']');
+        $out[] = html_writer::link($fixurl, '[' . get_string('action:changepermission', 'tool_whoiswho') . ']');
         $out[] = html_writer::link($roleurl, '[' . get_string('action:changerole', 'tool_whoiswho') . ']');
-        $out[] = html_writer::link($recheckurl, '[' . get_string('action:recheck', 'tool_whoiswho') . ']');
+        $button = new \single_button($recheckurl, get_string('action:recheck', 'tool_whoiswho'), 'post');
+        // Add a unique form id.
+        $button->formid = 'whoiswho-recheck-' . (int) $row->userid;
+        // Render button form.
+        $out[] = $OUTPUT->render($button);
 
         return implode(' ', $out);
     }

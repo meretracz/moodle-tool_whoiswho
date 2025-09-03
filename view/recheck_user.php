@@ -34,21 +34,35 @@ $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
 // Validate user exists.
 if (!$DB->record_exists('user', ['id' => $userid])) {
-    print_error('invaliduser');
+    throw new \core\exception\moodle_exception('invaliduser');
 }
 
-// Queue adhoc task.
-$task = new \tool_whoiswho\task\scan_user_adhoc();
-$task->set_component('tool_whoiswho');
-$task->set_custom_data(['userid' => $userid]);
-$task->set_userid($USER->id);
-\core\task\manager::queue_adhoc_task($task);
+// Run scan immediately for this user, respecting plugin settings.
+try {
+    \tool_whoiswho\local\scan_manager::run_users(null, [$userid], $USER->id);
+    $message = get_string('notice:completed_user_scan', 'tool_whoiswho');
 
-// Redirect.
-if ($returnurl) {
-    redirect(new moodle_url($returnurl), get_string('notice:queued_user_scan', 'tool_whoiswho'));
-} else {
-    $url = new moodle_url('/admin/tool/whoiswho/view/issues.php');
-    redirect($url, get_string('notice:queued_user_scan', 'tool_whoiswho'));
+    if ($returnurl) {
+        redirect(new moodle_url($returnurl), $message);
+    } else {
+        redirect(new moodle_url('/admin/tool/whoiswho/view/issues.php'), $message);
+    }
+
+} catch (Throwable $e) {
+    $message = get_string('notice:failed_user_scan', 'tool_whoiswho', $e->getMessage());
+    if ($returnurl) {
+        redirect(
+            new moodle_url($returnurl),
+            $message,
+            0,
+            \core\output\notification::NOTIFY_ERROR
+        );
+    } else {
+        redirect(
+            new moodle_url('/admin/tool/whoiswho/view/issues.php'),
+            $message,
+            0,
+            \core\output\notification::NOTIFY_ERROR
+        );
+    }
 }
-

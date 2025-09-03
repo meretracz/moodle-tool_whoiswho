@@ -37,6 +37,7 @@ admin_externalpage_setup('tool_whoiswho_dashboard');
 $fullname = optional_param('fullname', '', PARAM_TEXT);
 $contextlevel = optional_param('contextlevel', 0, PARAM_INT);
 $userid = optional_param('userid', 0, PARAM_INT);
+$status = optional_param('status', '', PARAM_ALPHA);
 
 // If userid is provided, get the user's name for pre-filling the filter.
 if ($userid > 0) {
@@ -51,6 +52,7 @@ $url = new moodle_url('/admin/tool/whoiswho/view/issues.php', [
     'fullname' => $fullname,
     'contextlevel' => $contextlevel,
     'userid' => $userid,
+    'status' => $status,
 ]);
 
 $PAGE->set_url($url);
@@ -61,6 +63,7 @@ $PAGE->set_heading(get_string('heading:issues', 'tool_whoiswho'));
 $filters = [
     'fullname' => $fullname,
     'contextlevel' => $contextlevel,
+    'status' => $status,
 ];
 if ($userid > 0) {
     $filters['userid'] = $userid;
@@ -74,4 +77,3 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('heading:issues', 'tool_whoiswho'));
 echo $OUTPUT->render($page);
 echo $OUTPUT->footer();
-
