@@ -62,6 +62,7 @@ class dashboard implements renderable, templatable {
      * @return array
      */
     public function get_items(): array {
+        global $DB;
 
         // Get actual statistics from capability manager.
         $stats = capability_manager::get_dashboard_stats();
@@ -69,6 +70,7 @@ class dashboard implements renderable, templatable {
         $issuelink = new \moodle_url('/admin/tool/whoiswho/view/issues.php');
         $userslink = new \moodle_url('/admin/tool/whoiswho/view/users.php');
 
+        // Fixed items: issues and users.
         $items = [
             [
                 'cardheader' => get_string('issues:dashboard', 'tool_whoiswho'),
@@ -82,13 +84,29 @@ class dashboard implements renderable, templatable {
                 'cardicon' => 'fa-users',
                 'overviewurl' => $userslink->out(),
             ],
-            [
-                'cardheader' => get_string('profilefield:dashboard', 'tool_whoiswho'),
-                'cardvalue' => '20',
-                'cardicon' => 'fa-id-badge',
-                'overviewurl' => '',
-            ],
         ];
+
+        // Add dynamic profile field cards based on configuration.
+        $cfg = get_config('tool_whoiswho');
+        if (!empty($cfg->profilefields)) {
+            $ids = preg_split('/[,\s]+/', (string) $cfg->profilefields);
+            $ids = array_values(array_filter(array_map('intval', (array) $ids)));
+
+            foreach ($ids as $pfid) {
+                $field = $DB->get_record('user_info_field', ['id' => $pfid], '*', IGNORE_MISSING);
+                if ($field) {
+                    // Get statistics for this profile field.
+                    $pfstats = capability_manager::get_profile_field_stats($pfid);
+
+                    $items[] = [
+                        'cardheader' => s($field->name),
+                        'cardvalue' => $pfstats['unique_values'],
+                        'cardicon' => 'fa-id-badge',
+                        'overviewurl' => $userslink->out() . '?profilefield=' . $pfid,
+                    ];
+                }
+            }
+        }
 
         return array_map(function($item) {
             return [
@@ -96,7 +114,6 @@ class dashboard implements renderable, templatable {
                 'cardvalue' => $item['cardvalue'],
                 'cardicon' => $item['cardicon'],
                 'overviewurl' => $item['overviewurl'],
-
             ];
         }, $items);
 
