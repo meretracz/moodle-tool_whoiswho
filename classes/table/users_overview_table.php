@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
 
-use context;
 use context_system;
 use html_writer;
 use moodle_url;
@@ -43,6 +42,7 @@ use table_sql;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class users_overview_table extends table_sql {
+
     use profile_fields_trait;
 
     /** @var array Filter values */
@@ -101,7 +101,9 @@ class users_overview_table extends table_sql {
         }
 
         // Add issue count subquery - exclude overlaps as they are not real issues.
-        $fields .= ', (SELECT COUNT(*) FROM {tool_whoiswho_finding} f2 WHERE f2.userid = u.id AND f2.type <> \'cap_overlap\') AS issuecount';
+        $fields .= ', (SELECT COUNT(*) FROM {tool_whoiswho_finding} f2
+                        WHERE f2.userid = u.id
+                          AND f2.type <> \'cap_overlap\') AS issuecount';
 
         $from = '{user} u ';
         $params = [];
@@ -123,7 +125,6 @@ class users_overview_table extends table_sql {
         $this->set_sql($fields, $from, $where, $params);
         $this->set_count_sql('SELECT COUNT(DISTINCT u.id) FROM ' . $from . ' WHERE ' . $where, $params);
     }
-
 
     /**
      * Builds the WHERE clause and corresponding parameters for filtering.
@@ -159,7 +160,7 @@ class users_overview_table extends table_sql {
     protected function col_profilefield(object $row, int $pfid): string {
         $fieldname = 'profilefield_' . $pfid;
 
-        if (!isset($row->$fieldname) || $row->$fieldname === null || $row->$fieldname === '') {
+        if (!isset($row->$fieldname) || $row->$fieldname === '') {
             return html_writer::tag('span', '-');
         }
 

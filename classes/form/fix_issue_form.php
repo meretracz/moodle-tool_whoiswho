@@ -71,26 +71,26 @@ class fix_issue_form extends moodleform {
             // Build enhanced label showing current setting.
             $currenttext = $permoptions[$current];
             $enhancedlabel = $label;
-            
+
             // Add visual indicator for current setting.
             if ($current !== CAP_INHERIT) {
-                $badge = match($current) {
+                $badge = match ($current) {
                     CAP_ALLOW => 'success',
-                    CAP_PREVENT => 'warning', 
+                    CAP_PREVENT => 'warning',
                     CAP_PROHIBIT => 'danger',
                     default => 'secondary'
                 };
                 $enhancedlabel .= ' ' . \html_writer::tag(
-                    'span',
-                    get_string('form:current', 'tool_whoiswho') . ': ' . $currenttext,
-                    ['class' => "badge badge-$badge ml-2"]
-                );
+                        'span',
+                        get_string('form:current', 'tool_whoiswho') . ': ' . $currenttext,
+                        ['class' => "badge badge-$badge ml-2"]
+                    );
             } else {
                 $enhancedlabel .= ' ' . \html_writer::tag(
-                    'span',
-                    get_string('form:current', 'tool_whoiswho') . ': ' . $currenttext,
-                    ['class' => 'text-muted ml-2']
-                );
+                        'span',
+                        get_string('form:current', 'tool_whoiswho') . ': ' . $currenttext,
+                        ['class' => 'text-muted ml-2']
+                    );
             }
 
             $mform->addElement('select', "perm[$rid]", $enhancedlabel, $permoptions);
@@ -99,7 +99,7 @@ class fix_issue_form extends moodleform {
 
             // Show effective value if different from current.
             if ($effective !== null && $effective !== $current && isset($permoptions[(int) $effective])) {
-                $effbadge = match((int) $effective) {
+                $effbadge = match ((int) $effective) {
                     CAP_ALLOW => 'info',
                     CAP_PREVENT => 'secondary',
                     CAP_PROHIBIT => 'danger',
@@ -137,4 +137,5 @@ class fix_issue_form extends moodleform {
 
         $this->add_action_buttons(true, get_string('savechanges'));
     }
+
 }

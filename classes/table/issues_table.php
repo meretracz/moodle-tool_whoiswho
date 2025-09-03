@@ -354,7 +354,6 @@ class issues_table extends table_sql {
             }
         }
 
-        $token = '[' . $name . ']';
         if ($url) {
             return html_writer::link($url, $name, ['class' => 'btn btn-sm btn-outline-info']);
         }
@@ -378,7 +377,10 @@ class issues_table extends table_sql {
         unset($basefilters['userids']);
         $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $basefilters);
         if (!empty($this->filters['userids'])) {
-            $uids = is_array($this->filters['userids']) ? $this->filters['userids'] : explode(',', (string) $this->filters['userids']);
+            $uids = is_array($this->filters['userids'])
+                ? $this->filters['userids']
+                : explode(',', (string) $this->filters['userids']);
+
             $csv = implode(',', array_map('intval', $uids));
             if ($csv !== '') {
                 $returnurl->param('userids', $csv);
@@ -390,14 +392,7 @@ class issues_table extends table_sql {
             'returnurl' => $returnurl->out_as_local_url(false),
         ]);
         $roleurl = new moodle_url('/admin/roles/assign.php', ['contextid' => $ctxid]);
-        $capurl = new moodle_url('/admin/roles/capability.php', [
-            'capability' => (string) $row->capability,
-            'contextid' => $ctxid,
-        ]);
-        $checkurl = new moodle_url('/admin/roles/check.php', [
-            'contextid' => $ctxid,
-            'userid' => (int) $row->userid,
-        ]);
+
         // Rebuild return URL for the recheck link in the same CSV-safe way.
         $basefilters2 = $this->filters;
         unset($basefilters2['userids']);
