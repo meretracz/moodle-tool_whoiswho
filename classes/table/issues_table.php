@@ -102,17 +102,19 @@ class issues_table extends table_sql {
         }
 
         // Add remaining columns.
+        $columns[] = 'status';
         $columns[] = 'roles';
         $columns[] = 'location';
         $columns[] = 'action';
 
+        $headers[] = get_string('col:status', 'tool_whoiswho');
         $headers[] = get_string('col:roles', 'tool_whoiswho');
         $headers[] = get_string('col:location', 'tool_whoiswho');
         $headers[] = get_string('col:action', 'tool_whoiswho');
         $this->define_columns($columns);
         $this->define_headers($headers);
 
-        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, '
+        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, f.issuestate, '
             . 'u.id AS uid, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, '
             . 'u.middlename, u.alternatename, '
             . 'c.contextlevel, c.instanceid';
@@ -296,11 +298,11 @@ class issues_table extends table_sql {
      */
     public function col_status(object $row): string {
         $status = (string) ($row->issuestate ?? 'pending');
-        if ($status === 'resolved') {
-            return get_string('status:resolved', 'tool_whoiswho');
-        }
-
-        return get_string('status:pending', 'tool_whoiswho');
+        return match ($status) {
+            'resolved' => get_string('status:resolved', 'tool_whoiswho'),
+            'ignored' => get_string('status:ignored', 'tool_whoiswho'),
+            default => get_string('status:pending', 'tool_whoiswho'),
+        };
     }
 
     /**
@@ -379,11 +381,12 @@ class issues_table extends table_sql {
             }
         }
 
+        $token = '[' . $name . ']';
         if ($url) {
-            return html_writer::link($url, $name, ['class' => 'btn btn-sm btn-outline-info']);
+            return html_writer::link($url, $token);
         }
 
-        return html_writer::tag('span', $name, ['class' => 'text-muted']);
+        return s($token);
     }
 
     /**
@@ -394,6 +397,7 @@ class issues_table extends table_sql {
      * @return string A concatenated string of HTML links for changing permissions and roles.
      */
     public function col_action(object $row): string {
+        global $OUTPUT;
         $ctxid = (int) $row->contextid;
 
         $fixurl = new moodle_url('/admin/tool/whoiswho/view/fix_issue.php', [
@@ -409,12 +413,13 @@ class issues_table extends table_sql {
         ]);
 
         $out = [];
-        $out[] = html_writer::link($fixurl, get_string('action:changepermission', 'tool_whoiswho'),
-            ['class' => 'btn btn-sm btn-outline-primary mb-1']);
-        $out[] = html_writer::link($roleurl, get_string('action:changerole', 'tool_whoiswho'),
-            ['class' => 'btn btn-sm btn-outline-secondary mb-1']);
-        $out[] = html_writer::link($recheckurl, get_string('action:recheck', 'tool_whoiswho'),
-            ['class' => 'btn btn-sm btn-outline-info mb-1']);
+        $out[] = html_writer::link($fixurl, '[' . get_string('action:changepermission', 'tool_whoiswho') . ']');
+        $out[] = html_writer::link($roleurl, '[' . get_string('action:changerole', 'tool_whoiswho') . ']');
+        $button = new \single_button($recheckurl, get_string('action:recheck', 'tool_whoiswho'), 'post');
+        // Add a unique form id.
+        $button->formid = 'whoiswho-recheck-' . (int) $row->userid;
+        // Render button form.
+        $out[] = $OUTPUT->render($button);
 
         return implode(' ', $out);
     }
