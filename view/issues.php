@@ -59,6 +59,12 @@ if (!empty($userids)) {
     $urlparams['userids'] = array_map('intval', $userids);
 }
 $url = new moodle_url('/admin/tool/whoiswho/view/issues.php', $urlparams);
+// Append repeated userids[] params (cannot pass arrays directly to moodle_url).
+if (!empty($userids)) {
+    foreach ($userids as $uid) {
+        $url->param('userids[]', (int) $uid);
+    }
+}
 
 $PAGE->set_url($url);
 $PAGE->set_title(get_string('title:issues', 'tool_whoiswho'));

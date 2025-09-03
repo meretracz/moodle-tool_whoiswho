@@ -28,7 +28,3 @@ Thank you for your interest in improving this Moodle admin tool. We welcome comm
 
 Please report security issues via the GitHub issue tracker. Avoid sharing sensitive details publicly—share minimal reproduction steps and impact.
 
-## Commercial / Priority Support
-
-If you need commercial help or priority support, contact: sales@ltnc.nl
-

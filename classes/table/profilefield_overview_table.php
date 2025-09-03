@@ -158,11 +158,12 @@ class profilefield_overview_table extends flexible_table {
      */
     public function col_action(object $row): string {
         // Link to issues page filtered by this row's user IDs.
-        $params = [];
+        $url = new moodle_url('/admin/tool/whoiswho/view/issues.php');
         if (!empty($row->userids) && is_array($row->userids)) {
-            $params['userids'] = array_map('intval', $row->userids);
+            foreach ($row->userids as $uid) {
+                $url->param('userids[]', (int) $uid);
+            }
         }
-        $url = new moodle_url('/admin/tool/whoiswho/view/issues.php', $params);
 
         return html_writer::link($url, get_string('profilefield_overview:viewusers', 'tool_whoiswho'),
             ['class' => 'btn btn-sm btn-outline-primary']);
