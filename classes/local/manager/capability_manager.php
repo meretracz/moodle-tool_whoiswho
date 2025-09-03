@@ -46,6 +46,7 @@ class capability_manager {
                 FROM {tool_whoiswho_finding}
                 WHERE resolved = 0
                 AND type <> :excludeoverlap";
+
         return $DB->count_records_sql($sql, ['excludeoverlap' => 'cap_overlap']);
     }
 
@@ -120,6 +121,53 @@ class capability_manager {
                 GROUP BY type";
 
         return $DB->get_records_sql($sql);
+    }
+
+    /**
+     * Get statistics for a specific profile field
+     *
+     * @param int $profilefieldid The profile field ID
+     *
+     * @return array Statistics for the profile field
+     */
+    public static function get_profile_field_stats(int $profilefieldid): array {
+        global $DB;
+
+        $stats = [];
+
+        // Get count of unique values for this profile field among users with issues.
+        $sql = "SELECT COUNT(DISTINCT uid.data) as unique_values
+                FROM {user_info_data} uid
+                WHERE uid.fieldid = :fieldid
+                AND EXISTS (
+                    SELECT 1
+                    FROM {tool_whoiswho_finding} f
+                    WHERE f.userid = uid.userid
+                    AND f.resolved = 0
+                    AND f.type <> 'cap_overlap'
+                )";
+
+        $result = $DB->get_record_sql($sql, ['fieldid' => $profilefieldid]);
+        $stats['unique_values'] = $result ? (int) $result->unique_values : 0;
+
+        // Get count of users with this field filled who have issues.
+        $sql = "SELECT COUNT(DISTINCT uid.userid) as user_count
+                FROM {user_info_data} uid
+                WHERE uid.fieldid = :fieldid
+                AND uid.data IS NOT NULL
+                AND uid.data <> ''
+                AND EXISTS (
+                    SELECT 1
+                    FROM {tool_whoiswho_finding} f
+                    WHERE f.userid = uid.userid
+                    AND f.resolved = 0
+                    AND f.type <> 'cap_overlap'
+                )";
+
+        $result = $DB->get_record_sql($sql, ['fieldid' => $profilefieldid]);
+        $stats['user_count'] = $result ? (int) $result->user_count : 0;
+
+        return $stats;
     }
 
 }

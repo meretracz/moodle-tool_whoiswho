@@ -72,8 +72,10 @@ if ($userid > 0) {
 // Create output object.
 $page = new \tool_whoiswho\output\issues_overview($filters, $url);
 
+// Render the page before any output. Allow for redirects/form submissions easier.
+$rendered = $OUTPUT->render($page);
+
 // Render the page.
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('heading:issues', 'tool_whoiswho'));
-echo $OUTPUT->render($page);
+echo $rendered;
 echo $OUTPUT->footer();

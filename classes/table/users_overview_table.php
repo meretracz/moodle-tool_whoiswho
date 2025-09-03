@@ -44,11 +44,14 @@ use table_sql;
  */
 class users_overview_table extends table_sql {
 
-    /** @var array Profile field ids for columns */
+    /** @var array Profile field IDs from config */
     protected array $profilefieldids = [];
 
-    /** @var array Names of profile fields for column headers */
+    /** @var array Profile field names for headers */
     protected array $profilefieldnames = [];
+
+    /** @var array Profile field types for formatting */
+    protected array $profilefieldtypes = [];
 
     /** @var array Filter values */
     protected array $filters = [];
@@ -58,6 +61,7 @@ class users_overview_table extends table_sql {
      *
      * @param string $uniqueid The unique identifier for the table instance.
      * @param array $filters   Optional filters to initialize the table with.
+     *
      * @return void
      */
     public function __construct(string $uniqueid, array $filters = []) {
@@ -75,35 +79,35 @@ class users_overview_table extends table_sql {
      * @return void
      */
     protected function define_columns_and_headers(): void {
-        $columns = ['firstname', 'lastname'];
-        $headers = [get_string('firstname'), get_string('lastname')];
-        
+        $columns = ['fullname'];
+        $headers = [get_string('fullname')];
+
         // Add profile field columns.
-        foreach ($this->profilefieldids as $index => $pfid) {
+        foreach ($this->profilefieldids as $pfid) {
             $columns[] = 'profilefield_' . $pfid;
-            $headers[] = isset($this->profilefieldnames[$pfid]) 
-                ? s($this->profilefieldnames[$pfid])
-                : get_string('col:profilefield', 'tool_whoiswho') . ' ' . ($index + 1);
+            $headers[] = s($this->profilefieldnames[$pfid]);
         }
-        
+
         // Add capabilities and issues columns.
         $columns[] = 'capabilities';
         $columns[] = 'issues';
-        
+
         $headers[] = get_string('col:allcapabilities', 'tool_whoiswho');
         $headers[] = get_string('col:issues', 'tool_whoiswho');
-        
+
         $this->define_columns($columns);
         $this->define_headers($headers);
+        $this->useridfield = 'id';  // Set the correct user ID field name.
 
         // Build SQL query.
-        $fields = 'DISTINCT u.id, u.firstname, u.lastname';
-        
+        $fields = 'DISTINCT u.id, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, '
+            . 'u.middlename, u.alternatename';
+
         // Add profile field data to the select.
         foreach ($this->profilefieldids as $pfid) {
-            $fields .= ", pf{$pfid}.data AS profiledata_{$pfid}";
+            $fields .= ", pf{$pfid}.data AS profilefield_{$pfid}";
         }
-        
+
         // Add issue count subquery - exclude overlaps as they are not real issues.
         $fields .= ', (SELECT COUNT(*) FROM {tool_whoiswho_finding} f2 WHERE f2.userid = u.id AND f2.type <> \'cap_overlap\') AS issuecount';
 
@@ -134,39 +138,26 @@ class users_overview_table extends table_sql {
      * @return void
      */
     protected function init_profilefields(): void {
+        global $DB;
+
         $cfg = get_config('tool_whoiswho');
         $this->profilefieldids = [];
         $this->profilefieldnames = [];
-        
+        $this->profilefieldtypes = [];
+
         if (!empty($cfg->profilefields)) {
             $ids = preg_split('/[,\s]+/', (string) $cfg->profilefields);
             $ids = array_values(array_filter(array_map('intval', (array) $ids)));
-            
-            // Get up to 2 profile fields for columns.
-            $maxfields = min(2, count($ids));
-            for ($i = 0; $i < $maxfields; $i++) {
-                $pfid = (int) $ids[$i];
-                $this->profilefieldids[] = $pfid;
-                $this->profilefieldnames[$pfid] = $this->load_profilefield_name($pfid);
+
+            foreach ($ids as $id) {
+                $field = $DB->get_record('user_info_field', ['id' => $id], 'id, name, datatype', IGNORE_MISSING);
+                if ($field) {
+                    $this->profilefieldids[] = $id;
+                    $this->profilefieldnames[$id] = $field->name;
+                    $this->profilefieldtypes[$id] = $field->datatype;
+                }
             }
         }
-        
-        // Ensure we always have 2 profile field slots.
-        while (count($this->profilefieldids) < 2) {
-            $this->profilefieldids[] = 0;
-        }
-    }
-
-    /**
-     * Loads the name of a user profile field based on its ID.
-     *
-     * @param int $id The ID of the profile field to retrieve the name for.
-     * @return string|null The name of the profile field if it exists, or null if not found.
-     */
-    protected function load_profilefield_name(int $id): ?string {
-        global $DB;
-        $name = $DB->get_field('user_info_field', 'name', ['id' => $id], IGNORE_MISSING);
-        return $name ?: null;
     }
 
     /**
@@ -188,81 +179,97 @@ class users_overview_table extends table_sql {
             $params['ln'] = $like;
         }
 
-        // Filter by user with issues only (exclude overlaps as they are not real issues).
-        if (!empty($this->filters['withissues'])) {
-            $where[] = 'EXISTS (SELECT 1 FROM {tool_whoiswho_finding} f WHERE f.userid = u.id AND f.type <> \'cap_overlap\')';
-        }
+        // Always filter to show only users with issues (exclude overlaps as they are not real issues).
+        $where[] = 'EXISTS (SELECT 1 FROM {tool_whoiswho_finding} f WHERE f.userid = u.id AND f.type <> \'cap_overlap\')';
 
         return [implode(' AND ', $where), $params];
     }
 
     /**
-     * Generates the profile field column output.
+     * Display profile field column.
      *
      * @param object $row The data row.
-     * @param int $pfid The profile field ID.
+     * @param int $pfid   The profile field ID.
+     *
      * @return string The formatted profile field value.
      */
     protected function col_profilefield(object $row, int $pfid): string {
-        $prop = 'profiledata_' . $pfid;
-        
-        if ($pfid && isset($row->$prop) && $row->$prop !== null && $row->$prop !== '') {
-            return format_string((string) $row->$prop, true, [
-                'context' => context_system::instance(),
-            ]);
+        $fieldname = 'profilefield_' . $pfid;
+
+        if (!isset($row->$fieldname) || $row->$fieldname === null || $row->$fieldname === '') {
+            return html_writer::tag('span', '-');
         }
 
-        return html_writer::tag('span', 'x', ['class' => 'text-muted']);
+        $value = (string) $row->$fieldname;
+        $fieldtype = $this->profilefieldtypes[$pfid] ?? 'text';
+
+        // Format checkbox fields as checkmarks or crosses.
+        if ($fieldtype === 'checkbox') {
+            if ($value === '1') {
+                return html_writer::tag('span', '✓', ['class' => 'badge badge-success', 'title' => get_string('yes')]);
+            }
+
+            return html_writer::tag('span', '✗', ['class' => 'badge badge-danger', 'title' => get_string('no')]);
+        }
+
+        // Default formatting for other field types.
+        return format_string($value, true, [
+            'context' => context_system::instance(),
+        ]);
     }
 
     /**
-     * Dynamic column method for profile fields.
+     * Override the other_cols method to handle dynamic profile field columns.
      *
      * @param string $column Column name.
-     * @param object $row The data row.
+     * @param object $row    The data row.
+     *
      * @return string The formatted output.
      */
-    public function other_cols($column, $row) {
+    public function other_cols($column, $row): string {
         if (preg_match('/^profilefield_(\d+)$/', $column, $matches)) {
             $pfid = (int) $matches[1];
+
             return $this->col_profilefield($row, $pfid);
         }
-        return '';
+
+        return parent::other_cols($column, $row);
     }
 
     /**
      * Generates the capabilities column output.
      *
      * @param object $row The data row.
+     *
      * @return string The formatted capabilities list.
      */
     public function col_capabilities(object $row): string {
         global $DB;
-        
+
         // Get all capabilities for this user from system context.
         $systemcontext = context_system::instance();
-        
+
         // Get user roles in system context.
         $assigns = get_user_roles($systemcontext, (int) $row->id, false);
-        
+
         if (empty($assigns)) {
             return html_writer::tag('span', '-', ['class' => 'text-muted']);
         }
-        
+
         $roleids = array_column($assigns, 'roleid');
         $rolenames = [];
-        
+
         foreach ($roleids as $roleid) {
             $role = $DB->get_record('role', ['id' => $roleid], '*', IGNORE_MISSING);
             if ($role) {
                 $rolenames[] = role_get_name($role, $systemcontext, ROLENAME_ALIAS);
             }
         }
-        
+
         if (empty($rolenames)) {
             return html_writer::tag('span', '-', ['class' => 'text-muted']);
         }
-        
+
         // Format as "Teacher, Student" etc.
         return s(implode(', ', $rolenames));
     }
@@ -271,42 +278,24 @@ class users_overview_table extends table_sql {
      * Generates the issues column output.
      *
      * @param object $row The data row.
+     *
      * @return string The formatted issues link.
      */
     public function col_issues(object $row): string {
         $issuecount = (int) ($row->issuecount ?? 0);
-        
+
         if ($issuecount === 0) {
             return html_writer::tag('span', '-', ['class' => 'text-muted']);
         }
-        
+
         // Create link to issues page filtered by this user.
         $url = new moodle_url('/admin/tool/whoiswho/view/issues.php', [
             'userid' => $row->id,
         ]);
-        
+
         $text = '[' . $issuecount . ' ' . get_string('issues', 'tool_whoiswho') . ']';
-        
+
         return html_writer::link($url, $text);
     }
 
-    /**
-     * Override first name column to make it sortable.
-     *
-     * @param object $row The data row.
-     * @return string The formatted first name.
-     */
-    public function col_firstname(object $row): string {
-        return format_string($row->firstname, true, ['context' => context_system::instance()]);
-    }
-
-    /**
-     * Override last name column to make it sortable.
-     *
-     * @param object $row The data row.
-     * @return string The formatted last name.
-     */
-    public function col_lastname(object $row): string {
-        return format_string($row->lastname, true, ['context' => context_system::instance()]);
-    }
 }

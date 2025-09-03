@@ -34,7 +34,6 @@ require_capability('tool/whoiswho:dashboardaccess', $context);
 
 // Get filter parameters.
 $fullname = optional_param('fullname', '', PARAM_TEXT);
-$withissues = optional_param('withissues', 0, PARAM_INT);
 $userid = optional_param('userid', 0, PARAM_INT);
 $download = optional_param('download', '', PARAM_ALPHA);
 
@@ -53,7 +52,6 @@ $PAGE->navbar->add(get_string('heading:users', 'tool_whoiswho'));
 // Filter form.
 $filters = [
     'fullname' => $fullname,
-    'withissues' => $withissues,
 ];
 
 // If specific userid provided, filter by that user.
@@ -64,11 +62,12 @@ if ($userid > 0) {
 // Create output object.
 $page = new \tool_whoiswho\output\users_overview($filters, $PAGE->url, $download);
 
+$rendered = $OUTPUT->render($page);
+
 // Handle download or display page.
 if (!$page->is_downloading()) {
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string('heading:users', 'tool_whoiswho'));
-    echo $OUTPUT->render($page);
+    echo $rendered;
     echo $OUTPUT->footer();
 } else {
     // Output table for download.

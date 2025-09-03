@@ -43,17 +43,17 @@ use table_sql;
  */
 class issues_table extends table_sql {
 
-    /** @var int|null Profile field id for value column */
-    protected ?int $profilefieldid = null;
+    /** @var array Profile field IDs from config */
+    protected array $profilefieldids = [];
 
-    /** @var string|null Name of profile field for column header */
-    protected ?string $profilefieldname = null;
+    /** @var array Profile field names for headers */
+    protected array $profilefieldnames = [];
+
+    /** @var array Profile field types for formatting */
+    protected array $profilefieldtypes = [];
 
     /** @var array Filter values */
     protected array $filters = [];
-
-    /** @var bool Whether DB has status column */
-    protected bool $hasstatus = true;
 
     /**
      * Constructor for the table class.
@@ -66,16 +66,7 @@ class issues_table extends table_sql {
     public function __construct(string $uniqueid, array $filters = []) {
         parent::__construct($uniqueid);
         $this->filters = $filters;
-        // Detect presence of status column (site may not be upgraded yet).
-        try {
-            global $DB;
-            $dbman = $DB->get_manager();
-            $table = new \xmldb_table('tool_whoiswho_finding');
-            $field = new \xmldb_field('status');
-            $this->hasstatus = $dbman->field_exists($table, $field);
-        } catch (\Throwable $e) {
-            $this->hasstatus = false;
-        }
+        $this->useridfield = 'uid';  // Set the correct user ID field name.
         $this->init_profilefield();
         $this->define_columns_and_headers();
         $this->set_attribute('class', 'generaltable whoiswho-issues-table');
@@ -95,49 +86,47 @@ class issues_table extends table_sql {
         $columns = [
             'issue',
             'contextbadge',
-            'firstname',
-            'lastname',
-            'profilefield',
-            'status',
-            'roles',
-            'location',
-            'action',
+            'fullname',
         ];
 
         $headers = [
             get_string('col:issue', 'tool_whoiswho'),
             get_string('col:context', 'tool_whoiswho'),
-            get_string('firstname'),
-            get_string('lastname'),
-            $this->profilefieldname
-                ? s($this->profilefieldname)
-                : get_string('col:profilefield', 'tool_whoiswho'),
-            get_string('col:status', 'tool_whoiswho'),
-            get_string('col:roles', 'tool_whoiswho'),
-            get_string('col:location', 'tool_whoiswho'),
-            get_string('col:action', 'tool_whoiswho'),
+            get_string('fullname'),
         ];
+
+        // Add profile field columns.
+        foreach ($this->profilefieldids as $pfid) {
+            $columns[] = 'profilefield_' . $pfid;
+            $headers[] = s($this->profilefieldnames[$pfid]);
+        }
+
+        // Add remaining columns.
+        $columns[] = 'roles';
+        $columns[] = 'location';
+        $columns[] = 'action';
+
+        $headers[] = get_string('col:roles', 'tool_whoiswho');
+        $headers[] = get_string('col:location', 'tool_whoiswho');
+        $headers[] = get_string('col:action', 'tool_whoiswho');
         $this->define_columns($columns);
         $this->define_headers($headers);
 
-        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, f.issuestate, '
-            . 'u.firstname, u.lastname, u.id AS uid, '
+        $fields = 'f.id, f.type, f.capability, f.userid, f.contextid, '
+            . 'u.id AS uid, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, '
+            . 'u.middlename, u.alternatename, '
             . 'c.contextlevel, c.instanceid';
-
-        if ($this->profilefieldid) {
-            $fields .= ', uidata.data AS profiledata';
-        } else {
-            $fields .= ', NULL AS profiledata';
-        }
 
         $from = '{tool_whoiswho_finding} f '
             . 'JOIN {user} u ON u.id = f.userid '
             . 'JOIN {context} c ON c.id = f.contextid ';
         $params = [];
 
-        if ($this->profilefieldid) {
-            $from .= 'LEFT JOIN {user_info_data} uidata ON (uidata.userid = u.id AND uidata.fieldid = :pfid) ';
-            $params['pfid'] = $this->profilefieldid;
+        // Add profile field data joins and fields.
+        foreach ($this->profilefieldids as $index => $pfid) {
+            $alias = 'pf' . $index;
+            $fields .= ", {$alias}.data AS profilefield_{$pfid}";
+            $from .= " LEFT JOIN {user_info_data} {$alias} ON ({$alias}.userid = u.id AND {$alias}.fieldid = {$pfid})";
         }
 
         [$where, $wparams] = $this->build_filters_where();
@@ -149,36 +138,31 @@ class issues_table extends table_sql {
 
     /**
      * Initializes the profile field configuration by retrieving and setting
-     * profile field ID and name based on the provided configuration.
+     * profile field IDs and names based on the provided configuration.
      *
      * @return void
      */
     protected function init_profilefield(): void {
+        global $DB;
+
         $cfg = get_config('tool_whoiswho');
-        $this->profilefieldid = null;
-        $this->profilefieldname = null;
+        $this->profilefieldids = [];
+        $this->profilefieldnames = [];
+        $this->profilefieldtypes = [];
+
         if (!empty($cfg->profilefields)) {
             $ids = preg_split('/[,\s]+/', (string) $cfg->profilefields);
             $ids = array_values(array_filter(array_map('intval', (array) $ids)));
-            if (!empty($ids)) {
-                $this->profilefieldid = (int) $ids[0];
-                $this->profilefieldname = $this->load_profilefield_name($this->profilefieldid);
+
+            foreach ($ids as $id) {
+                $field = $DB->get_record('user_info_field', ['id' => $id], 'id, name, datatype', IGNORE_MISSING);
+                if ($field) {
+                    $this->profilefieldids[] = $id;
+                    $this->profilefieldnames[$id] = $field->name;
+                    $this->profilefieldtypes[$id] = $field->datatype;
+                }
             }
         }
-    }
-
-    /**
-     * Loads the name of a user profile field based on its ID.
-     *
-     * @param int $id The ID of the profile field to retrieve the name for.
-     *
-     * @return string|null The name of the profile field if it exists, or null if not found.
-     */
-    protected function load_profilefield_name(int $id): ?string {
-        global $DB;
-        $name = $DB->get_field('user_info_field', 'name', ['id' => $id], IGNORE_MISSING);
-
-        return $name ?: null;
     }
 
     /**
@@ -253,21 +237,54 @@ class issues_table extends table_sql {
     }
 
     /**
-     * Generates and returns the formatted output for a specific profile field,
-     * based on the data row provided.
+     * Display profile field column.
      *
-     * @param object $row An object containing the data row that includes profile data.
+     * @param object $row The row data.
+     * @param int $pfid   The profile field ID.
      *
-     * @return string The formatted profile field value or a placeholder indicating "not available".
+     * @return string The formatted output.
      */
-    public function col_profilefield(object $row): string {
-        if ($this->profilefieldid && isset($row->profiledata) && $row->profiledata !== null && $row->profiledata !== '') {
-            return format_string((string) $row->profiledata, true, [
-                'context' => \context_system::instance(),
-            ]);
+    protected function col_profilefield(object $row, int $pfid): string {
+        $fieldname = 'profilefield_' . $pfid;
+
+        if (!isset($row->$fieldname) || $row->$fieldname === null || $row->$fieldname === '') {
+            return html_writer::tag('span', '-');
         }
 
-        return html_writer::tag('span', '-');
+        $value = (string) $row->$fieldname;
+        $fieldtype = $this->profilefieldtypes[$pfid] ?? 'text';
+
+        // Format checkbox fields as checkmarks or crosses.
+        if ($fieldtype === 'checkbox') {
+            if ($value === '1') {
+                return html_writer::tag('span', '✓', ['class' => 'badge badge-success', 'title' => get_string('yes')]);
+            }
+
+            return html_writer::tag('span', '✗', ['class' => 'badge badge-danger', 'title' => get_string('no')]);
+        }
+
+        // Default formatting for other field types.
+        return format_string($value, true, [
+            'context' => \context_system::instance(),
+        ]);
+    }
+
+    /**
+     * Override the other_cols method to handle dynamic profile field columns.
+     *
+     * @param string $column The column name.
+     * @param object $row    The row data.
+     *
+     * @return string The formatted column value.
+     */
+    public function other_cols($column, $row): string {
+        if (preg_match('/^profilefield_(\d+)$/', $column, $matches)) {
+            $pfid = (int) $matches[1];
+
+            return $this->col_profilefield($row, $pfid);
+        }
+
+        return parent::other_cols($column, $row);
     }
 
     /**

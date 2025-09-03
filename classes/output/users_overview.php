@@ -28,6 +28,7 @@ use core\output\renderable;
 use core\output\renderer_base;
 use core\output\templatable;
 use moodle_url;
+use tool_whoiswho\form\users_filter_form;
 use tool_whoiswho\table\users_overview_table;
 
 /**
@@ -41,34 +42,43 @@ class users_overview implements renderable, templatable {
 
     /** @var array Filter values */
     protected array $filters = [];
-    
+
     /** @var moodle_url Page URL */
     protected moodle_url $pageurl;
-    
+
+    /** @var users_filter_form Filter form */
+    protected users_filter_form $filterform;
+
     /** @var users_overview_table Table instance */
     protected users_overview_table $table;
-    
+
     /** @var string Download format if downloading */
     protected string $download = '';
 
     /**
      * Constructor
      *
-     * @param array $filters Filter values
+     * @param array $filters      Filter values
      * @param moodle_url $pageurl Page URL
-     * @param string $download Download format
+     * @param string $download    Download format
      */
     public function __construct(array $filters, moodle_url $pageurl, string $download = '') {
         $this->filters = $filters;
         $this->pageurl = $pageurl;
         $this->download = $download;
-        
+
+        // Initialize filter form.
+        $this->filterform = new users_filter_form($pageurl->out(false));
+        $this->filterform->set_data([
+            'fullname' => $filters['fullname'] ?? '',
+        ]);
+
         // Initialize table.
         $this->table = new users_overview_table('whoiswho_users', $filters);
         $this->table->define_baseurl($pageurl);
         $this->table->is_downloadable(true);
         $this->table->show_download_buttons_at([TABLE_P_BOTTOM]);
-        
+
         // Handle download.
         if ($download) {
             $this->table->is_downloading($download, 'whoiswho_users_' . date('Ymd'));
@@ -92,6 +102,7 @@ class users_overview implements renderable, templatable {
     public function get_table_output(): string {
         ob_start();
         $this->table->out(50, true);
+
         return ob_get_clean();
     }
 
@@ -99,16 +110,22 @@ class users_overview implements renderable, templatable {
      * Export data for template
      *
      * @param renderer_base $output
+     *
      * @return array
      */
     public function export_for_template(renderer_base $output): array {
+
+        // Capture filter form.
+        ob_start();
+        $this->filterform->display();
+        $filterformhtml = ob_get_clean();
+
         return [
             'dashboardurl' => (new moodle_url('/admin/tool/whoiswho/view/dashboard.php'))->out(false),
-            'pageurl' => $this->pageurl->out(false),
-            'fullname' => s($this->filters['fullname'] ?? ''),
-            'withissues' => !empty($this->filters['withissues']),
+            'filterform' => $filterformhtml,
             'table' => $this->get_table_output(),
-            'hasfilters' => !empty($this->filters['fullname']) || !empty($this->filters['withissues']),
+            'hasfilters' => !empty($this->filters['fullname']),
         ];
     }
+
 }
