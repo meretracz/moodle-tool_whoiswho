@@ -58,8 +58,6 @@ We welcome community contributions via GitHub Pull Requests.
 - License: By contributing, you agree your code is GPL v3 compatible, consistent with this project’s license.
 - Community: Be respectful and constructive in discussions and reviews.
 
-Need commercial help or priority support? Contact [sales@ltnc.nl](mailto:sales@ltnc.nl).
-
 ## Changelog
 
 #### 4.5.0
