@@ -55,7 +55,7 @@ class issues_overview implements renderable, templatable {
     /**
      * Constructor
      *
-     * @param array $filters Filter values
+     * @param array $filters      Filter values
      * @param moodle_url $pageurl Page URL
      */
     public function __construct(array $filters, moodle_url $pageurl) {
@@ -80,10 +80,10 @@ class issues_overview implements renderable, templatable {
      * Export data for template
      *
      * @param renderer_base $output
+     *
      * @return array
      */
     public function export_for_template(renderer_base $output): array {
-        global $OUTPUT;
 
         // Capture filter form.
         ob_start();
@@ -103,4 +103,5 @@ class issues_overview implements renderable, templatable {
                 || !empty($this->filters['userid']) || ($this->filters['status'] ?? '') !== '',
         ];
     }
+
 }

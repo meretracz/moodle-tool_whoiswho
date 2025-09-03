@@ -98,11 +98,14 @@ class dashboard implements renderable, templatable {
                     // Get statistics for this profile field.
                     $pfstats = capability_manager::get_profile_field_stats($pfid);
 
+                    $profilefieldlink = new \moodle_url('/admin/tool/whoiswho/view/profilefield_overview.php',
+                        ['field' => 'profile_field_' . $field->shortname]);
+
                     $items[] = [
                         'cardheader' => s($field->name),
                         'cardvalue' => $pfstats['unique_values'],
                         'cardicon' => 'fa-id-badge',
-                        'overviewurl' => $userslink->out() . '?profilefield=' . $pfid,
+                        'overviewurl' => $profilefieldlink->out(),
                     ];
                 }
             }

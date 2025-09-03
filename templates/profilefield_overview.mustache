@@ -1,0 +1,45 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_whoiswho/profilefield_overview
+
+    Template for profile field overview page.
+
+    Context variables required for this template:
+    * fieldname - Display name of the field
+    * dashboardurl - URL to return to dashboard
+    * tablehtml - Rendered HTML of the table
+
+    Example context (json):
+    {
+        "fieldname": "Department",
+        "dashboardurl": "/admin/tool/whoiswho/view/dashboard.php",
+        "tablehtml": "<table>...</table>"
+    }
+}}
+
+<div class="tool-whoiswho-profilefield-overview">
+    <h3 class="mb-3">{{#str}}profilefield_overview:field, tool_whoiswho{{/str}}: {{fieldname}}</h3>
+    
+    <div class="mb-3">
+        <a href="{{{dashboardurl}}}" class="btn btn-secondary">
+            ← {{#str}}backtodashboard, tool_whoiswho{{/str}}
+        </a>
+    </div>
+
+    {{{tablehtml}}}
+</div>

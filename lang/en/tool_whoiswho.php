@@ -156,3 +156,15 @@ $string['form:effective'] = 'Effective in context';
 $string['status:pending'] = 'Pending';
 $string['status:resolved'] = 'Resolved';
 $string['status:ignored'] = 'Ignored';
+
+// Profile field overview page.
+$string['title:profilefield_overview'] = 'Profile field overview';
+$string['heading:profilefield_overview'] = 'Profile field overview: {$a}';
+$string['profilefield_overview:field'] = 'Profile field';
+$string['profilefield_overview:value'] = 'Value';
+$string['profilefield_overview:totalusers'] = 'Total users';
+$string['profilefield_overview:allroles'] = 'All roles';
+$string['profilefield_overview:numberofissues'] = 'Number of issues';
+$string['profilefield_overview:viewusers'] = 'View users';
+$string['profilefield_overview:nodata'] = 'No data available for this profile field';
+$string['noroles'] = 'No roles';
