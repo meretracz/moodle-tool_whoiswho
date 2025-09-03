@@ -17,11 +17,10 @@
 /**
  * PHPUnit tests for capability issue detection in scan_manager.
  *
- * @package    tool_whoiswho
- * @category   test
- * @copyright  2025
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ * @package     tool_whoiswho
+ * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
+ * @author      Luuk Verhoeven
+ **/
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -29,9 +28,24 @@ use tool_whoiswho\local\scan_manager;
 
 /**
  * Tests for scan_manager capability overlap/conflict detection.
- */
+ *
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @package     tool_whoiswho
+ * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
+ * @author      Luuk Verhoeven
+ **/
 class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
 
+    /**
+     * Sets up the testing environment before each test is run.
+     *
+     * This method initializes the testing environment by calling the parent setup
+     * method, resetting the state to ensure consistency between tests, and setting
+     * the current user as the admin user.
+     *
+     * @return void
+     */
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
@@ -39,12 +53,16 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
     }
 
     /**
-     * Creates a new role and sets a single capability permission at system level.
+     * Creates a new role with a specific capability and permission.
      *
-     * @param string $shortname Shortname for role.
-     * @param string $cap       Capability name.
-     * @param int $perm         One of CAP_ALLOW, CAP_PREVENT, CAP_PROHIBIT.
-     * @return int Role id.
+     * This method creates a role with a given shortname, assigns a specified capability
+     * to the role with a corresponding permission at the system context level, and
+     * returns the ID of the created role.
+     *
+     * @param string $shortname The shortname for the role to be created.
+     * @param string $cap       The capability to assign to the created role.
+     * @param int $perm         The permission level to assign for the capability (e.g., CAP_ALLOW, CAP_PREVENT).
+     * @return int The ID of the created role.
      */
     protected function create_role_with_cap(string $shortname, string $cap, int $perm): int {
         $sysctx = context_system::instance();
@@ -56,8 +74,13 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
     }
 
     /**
-     * Ensures overlaps are detected when the same capability is ALLOWed by multiple roles
-     * assigned to a user within the same course context.
+     * Tests whether an overlap is correctly detected in a course context.
+     *
+     * The method verifies if overlapping role assignments for a specific capability
+     * are properly identified within a course context. It ensures that the overlap
+     * is correctly categorized without any conflicting roles being detected.
+     *
+     * @return void
      */
     public function test_detects_overlap_in_course_context(): void {
         $gen = $this->getDataGenerator();
@@ -83,8 +106,13 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
     }
 
     /**
-     * Ensures conflicts are detected at activity (module) context when one role ALLOWs and another
-     * PREVENTs/PROHIBITs the same capability.
+     * Tests whether a conflict is correctly detected in a module context.
+     *
+     * The method checks if capability conflicts exist for a user within a specific
+     * module context when conflicting role assignments are made. It ensures that
+     * the detected conflicts for the given capability are categorized appropriately.
+     *
+     * @return void
      */
     public function test_detects_conflict_in_module_context(): void {
         $gen = $this->getDataGenerator();
@@ -116,7 +144,10 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
     }
 
     /**
-     * When includeparents is true, the result set includes entries for parent contexts.
+     * Tests that enabling the inclusion of parent contexts correctly adds parent contexts,
+     * ensuring the presence of capabilities inherited from those contexts.
+     *
+     * @return void
      */
     public function test_include_parents_adds_parent_contexts(): void {
         $gen = $this->getDataGenerator();
@@ -146,7 +177,14 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
     }
 
     /**
-     * Fingerprint should be order-insensitive and stable for the same sets.
+     * Tests that the fingerprinting process is order-insensitive and normalized.
+     *
+     * This method verifies that two sets of role capability assignments produce
+     * identical fingerprints, even when their internal ordering differs or when
+     * duplicate entries are present in the input data. It ensures consistency in
+     * fingerprint computation for the given user, context, capability, and role sets.
+     *
+     * @return void
      */
     public function test_fingerprint_is_order_insensitive(): void {
         $uid = 42;
