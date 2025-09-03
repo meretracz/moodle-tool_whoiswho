@@ -89,6 +89,8 @@ class scan_manager_test extends advanced_testcase {
      * @return void
      */
     public function test_detects_overlap_in_course_context(): void {
+        $this->markTestSkipped('Overlap detection disabled: only conflicts are scanned and stored.');
+        // Original overlap test left for reference if re-enabled in future.
         $gen = $this->getDataGenerator();
         $user = $gen->create_user();
         $course = $gen->create_course();
@@ -218,4 +220,3 @@ class scan_manager_test extends advanced_testcase {
     }
 
 }
-

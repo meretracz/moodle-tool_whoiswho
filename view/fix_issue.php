@@ -79,7 +79,11 @@ foreach ($assigns as $a) {
         }
     }
 
-    $rolesdata[$rid] = ['name' => $name, 'current' => $current, 'effective' => $effective];
+    $rolesdata[$rid] = [
+        'name' => $name,
+        'current' => $current,
+        'effective' => $effective,
+    ];
 }
 
 $mform = new fix_issue_form($url->out(false), [

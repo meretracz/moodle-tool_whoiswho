@@ -36,6 +36,11 @@ use moodleform;
  */
 class fix_issue_form extends moodleform {
 
+    /**
+     * Define the form elements.
+     *
+     * @return void
+     */
     public function definition(): void {
         $mform = $this->_form;
 
@@ -68,7 +73,12 @@ class fix_issue_form extends moodleform {
 
             // Optional: display effective value for extra context.
             if ($effective !== null && isset($permoptions[(int) $effective])) {
-                $mform->addElement('static', "eff_$rid", get_string('form:effective', 'tool_whoiswho'), $permoptions[(int) $effective]);
+                $mform->addElement(
+                    'static',
+                    "eff_$rid",
+                    get_string('form:effective', 'tool_whoiswho'),
+                    $permoptions[(int) $effective]
+                );
             }
         }
 

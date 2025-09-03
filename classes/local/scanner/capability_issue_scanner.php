@@ -69,9 +69,8 @@ class capability_issue_scanner extends base_scanner {
         // 1) Resolve configuration and scope.
         $resolved = $this->resolve_config();
         $rootctx = $resolved['rootctx'];
-        $overlapenabled = $resolved['overlapenabled'];
         $conflictenabled = $resolved['conflictenabled'];
-        $overlaponly = $resolved['overlaponly'];
+        $overlaponly = false; // Overlap scanning disabled; always process conflicts only.
         $includeparents = $resolved['includeparents'];
 
         // 2) Start scan run record.
@@ -106,7 +105,7 @@ class capability_issue_scanner extends base_scanner {
                 }
                 $cxpayload = $issues['contexts'][$cx->id];
 
-                // 4) Handle conflicts and overlaps per pair.
+                // 4) Handle conflicts per pair (overlaps disabled).
                 $this->process_conflicts(
                     $cxpayload,
                     $userid,
@@ -116,13 +115,7 @@ class capability_issue_scanner extends base_scanner {
                     $counters
                 );
 
-                $this->process_overlaps(
-                    $cxpayload,
-                    $userid,
-                    $cx,
-                    $overlapenabled,
-                    $counters
-                );
+                // Overlap processing intentionally disabled.
             }
 
             // 5) Finalize scan success.

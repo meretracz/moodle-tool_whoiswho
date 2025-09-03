@@ -90,8 +90,8 @@ $string['task_adhoc_security_scan'] = 'Who is who: adhoc security scan';
 // Scanner names/descriptions.
 $string['capability_scanner'] = 'Core capability risk scanner';
 $string['capability_scanner_desc'] = 'Checks for dangerous core capabilities granted to roles, guests, authenticated users, orphaned capabilities, and context risks.';
-$string['capability_issue_scanner'] = 'User capability overlap/conflict scanner';
-$string['capability_issue_scanner_desc'] = 'Detects overlaps and conflicts at user/context level based on current role assignments and plugin settings.';
+$string['capability_issue_scanner'] = 'User capability conflict scanner';
+$string['capability_issue_scanner_desc'] = 'Detects conflicts at user/context level based on current role assignments and plugin settings.';
 
 // Notices.
 $string['notice:queued_overlap_scan'] = 'Overlap scan queued. It will run shortly via cron.';

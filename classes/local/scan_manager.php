@@ -135,23 +135,7 @@ class scan_manager {
                         $created ? $newfind++ : $updfind++;
                     }
                 }
-                // Overlaps next (lower severity).
-                if ($overlapenabled) {
-                    foreach ($cxpayload['overlaps'] as $cap => $roleids) {
-                        $sets = ['allow' => array_values($roleids), 'prevent' => [], 'prohibit' => []];
-                        $activeissues[] = self::fingerprint($user, $cx->id, $cap, $sets);
-                        [$created] = self::upsert_finding(
-                            $scanid,
-                            $user,
-                            $cx->id,
-                            $cap,
-                            'cap_overlap',
-                            2,
-                            $sets
-                        );
-                        $created ? $newfind++ : $updfind++;
-                    }
-                }
+                // Overlap storage disabled by requirement.
 
                 // Clean up resolved findings that no longer have issues.
                 self::cleanup_resolved_findings($user, $cx->id, $activeissues);
@@ -340,10 +324,13 @@ class scan_manager {
         ];
 
         foreach ($contexts as $cx) {
-            // Include roles inherited from parent contexts so module-level checks
-            // see course/category/system assignments too.
-            $assigns = get_user_roles($cx, $userid, true);
-            if (empty($assigns)) {
+            // Build role assignments for this context.
+            // - For computing effective permissions, include roles from parent contexts as they apply here.
+            // - For display, only list roles directly assigned in this context.
+            $effectiveassigns = get_user_roles($cx, $userid, true);
+            $directassigns = get_user_roles($cx, $userid, false);
+
+            if (empty($effectiveassigns)) {
                 $result['contexts'][$cx->id] = [
                     'contextid' => $cx->id,
                     'contextname' => self::context_name($cx),
@@ -355,30 +342,66 @@ class scan_manager {
                 continue;
             }
 
-            $roles = [];
+            // Display roles: only direct assignments in this exact context.
+            $displayroles = [];
+            foreach ($directassigns as $a) {
+                $rid = (int) $a->roleid;
+                $displayroles[$rid] = $displayroles[$rid] ?? self::role_name($rid);
+            }
+
+            // For overlap/conflict detection, compute each role's effective permission for each capability
+            // at this context by looking up overrides along the context path (from system down to this context).
             $capmatrix = [];
 
-            foreach ($assigns as $a) {
-                $roleid = (int) $a->roleid;
-                $roles[$roleid] = $roles[$roleid] ?? self::role_name($roleid);
+            // Pre-compute the context path order to determine specificity.
+            $pathids = array_values(array_filter(array_map('intval', explode('/', trim((string) $cx->path, '/')))));
+            $depthmap = array_flip($pathids); // contextid => depth index (0 = system ... N = most specific)
 
-                // Only check capabilities at this specific context level.
-                // Conflicts should be detected based on direct overrides at this context,
-                // not effective permissions that include inheritance.
-                $caps = [];
-                $records = $DB->get_records('role_capabilities', [
-                    'roleid' => $roleid,
-                    'contextid' => $cx->id
-                ]);
+            foreach ($effectiveassigns as $a) {
+                $roleid = (int) $a->roleid;
+
+                // Fetch all capability settings for this role along the path to this context.
+                [$insql, $inparams] = $DB->get_in_or_equal($pathids, SQL_PARAMS_NAMED, 'cid');
+                $records = $DB->get_records_select(
+                    'role_capabilities',
+                    "roleid = :rid AND contextid $insql",
+                    array_merge(['rid' => $roleid], $inparams)
+                );
+
+                if (empty($records)) {
+                    continue;
+                }
+
+                // Determine the effective permission per capability for this role in this context.
+                $effective = [];
                 foreach ($records as $rc) {
-                    // Only include non-inherit permissions.
-                    if ((int) $rc->permission !== CAP_INHERIT) {
-                        $caps[$rc->capability] = (int) $rc->permission;
+                    $capname = (string) $rc->capability;
+                    $perm = (int) $rc->permission;
+                    if ($perm === CAP_INHERIT) {
+                        continue;
+                    }
+                    $rcctx = (int) $rc->contextid;
+                    $depth = $depthmap[$rcctx] ?? -1;
+
+                    // PROHIBIT always wins regardless of specificity.
+                    if ($perm === CAP_PROHIBIT) {
+                        $effective[$capname] = ['perm' => CAP_PROHIBIT, 'depth' => $depth, 'lock' => true];
+                        continue;
+                    }
+
+                    // If already prohibited, keep it.
+                    if (!empty($effective[$capname]['lock'])) {
+                        continue;
+                    }
+
+                    // Choose the most specific (deepest) non-inherit permission.
+                    if (!isset($effective[$capname]) || $depth >= ($effective[$capname]['depth'] ?? -1)) {
+                        $effective[$capname] = ['perm' => $perm, 'depth' => $depth];
                     }
                 }
 
-                foreach ($caps as $capname => $perm) {
-                    $capmatrix[$capname][$roleid] = (int) $perm;
+                foreach ($effective as $capname => $info) {
+                    $capmatrix[$capname][$roleid] = (int) $info['perm'];
                 }
             }
 
@@ -403,9 +426,7 @@ class scan_manager {
                     }
                 }
 
-                if (count($allow) > 1) {
-                    $overlaps[$cap] = $allow;
-                }
+                // Overlap detection disabled.
 
                 if (!empty($allow) && (!empty($prevent) || !empty($prohibit))) {
                     $conflicts[$cap] = [
@@ -419,11 +440,11 @@ class scan_manager {
             $result['contexts'][$cx->id] = [
                 'contextid' => $cx->id,
                 'contextname' => self::context_name($cx),
-                'roles' => $roles,
+                'roles' => $displayroles,
                 'overlaps' => $overlaps,
                 'conflicts' => $conflicts,
                 'stats' => [
-                    'roles' => count($roles),
+                    'roles' => count($displayroles),
                     'caps_checked' => $capschecked,
                     'overlap_caps' => count($overlaps),
                     'conflict_caps' => count($conflicts),
@@ -499,77 +520,27 @@ class scan_manager {
     public static function run_overlap(?\context $rootcontext = null, ?array $userids = null, ?int $initiatedby = null): void {
         global $DB;
 
-        $cfg = get_config('tool_whoiswho');
-        $includeparents = !empty($cfg->scan_include_parents);
-        $levels = [];
-        if (!empty($cfg->scan_contextlevels)) {
-            $levels = array_values(
-                array_filter(
-                    array_map(
-                        'intval',
-                        preg_split('/[,\s]+/', (string) $cfg->scan_contextlevels)
-                    )
-                )
-            );
-        }
-
+        // Overlap scanning is disabled. Create a scan record to reflect the request
+        // and immediately finalize as success with zero work done.
         $scan = (object) [
             'startedat' => time(),
             'finishedat' => null,
             'status' => 'running',
             'initiatedby' => $initiatedby,
             'scopecontextid' => $rootcontext?->id,
-            'meta' => json_encode(['mode' => 'adhoc-overlap']),
+            'meta' => json_encode(['mode' => 'adhoc-overlap', 'note' => 'overlap scanning disabled']),
         ];
         $scanid = $DB->insert_record('tool_whoiswho_scan', $scan);
 
-        try {
-            [$pairs, $meta] = self::select_pairs($rootcontext, (array) $userids, $levels);
-            $new = 0;
-            $upd = 0;
-            $count = 0;
-            foreach ($pairs as $p) {
-                $count++;
-                $userid = (int) $p['userid'];
-                $cx = \context::instance_by_id((int) $p['contextid'], MUST_EXIST);
-                $issues = self::find_capability_issues_for_user($userid, $cx, $includeparents);
-                if (empty($issues['contexts'][$cx->id])) {
-                    continue;
-                }
-                $cxpayload = $issues['contexts'][$cx->id];
-                foreach ($cxpayload['overlaps'] as $cap => $roleids) {
-                    $sets = ['allow' => array_values($roleids), 'prevent' => [], 'prohibit' => []];
-                    [$created] = self::upsert_finding($scanid, $userid, $cx->id, $cap, 'cap_overlap', 2, $sets);
-                    $created ? $new++ : $upd++;
-                }
-            }
-
-            $DB->update_record(
-                'tool_whoiswho_scan',
-                (object) [
-                    'id' => $scanid,
-                    'finishedat' => time(),
-                    'status' => 'success',
-                    'meta' => json_encode(array_merge(['mode' => 'adhoc-overlap'], $meta, [
-                        'pairs' => $count,
-                        'new' => $new,
-                        'updated' => $upd,
-                    ])),
-                ]
-            );
-
-        } catch (\Throwable $e) {
-            $DB->update_record(
-                'tool_whoiswho_scan',
-                (object) [
-                    'id' => $scanid,
-                    'finishedat' => time(),
-                    'status' => 'failed',
-                    'meta' => json_encode(['mode' => 'adhoc-overlap', 'error' => $e->getMessage()]),
-                ]
-            );
-            throw $e;
-        }
+        $DB->update_record(
+            'tool_whoiswho_scan',
+            (object) [
+                'id' => $scanid,
+                'finishedat' => time(),
+                'status' => 'success',
+                'meta' => json_encode(['mode' => 'adhoc-overlap', 'note' => 'overlap scanning disabled', 'pairs' => 0, 'new' => 0, 'updated' => 0]),
+            ]
+        );
     }
 
     /**
@@ -650,22 +621,7 @@ class scan_manager {
                     }
                 }
 
-                if ($overlapenabled) {
-                    foreach ($cxpayload['overlaps'] as $cap => $roleids) {
-                        $sets = ['allow' => array_values($roleids), 'prevent' => [], 'prohibit' => []];
-                        $activeissues[] = self::fingerprint($userid, $cx->id, $cap, $sets);
-                        [$created] = self::upsert_finding(
-                            $scanid,
-                            $userid,
-                            $cx->id,
-                            $cap,
-                            'cap_overlap',
-                            2,
-                            $sets
-                        );
-                        $created ? $new++ : $upd++;
-                    }
-                }
+                // Overlap storage disabled by requirement.
 
                 // Clean up resolved findings that no longer have issues.
                 self::cleanup_resolved_findings($userid, $cx->id, $activeissues);
