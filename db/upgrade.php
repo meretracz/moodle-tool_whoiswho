@@ -45,9 +45,18 @@ function xmldb_tool_whoiswho_upgrade(int $oldversion): bool {
             $dbman->create_table($table);
         }
         // Indexes.
-        $dbman->add_index($table, new xmldb_index('status_ix', XMLDB_INDEX_NOTUNIQUE, ['status']));
-        $dbman->add_index($table, new xmldb_index('scope_ix', XMLDB_INDEX_NOTUNIQUE, ['scopecontextid']));
-        $dbman->add_index($table, new xmldb_index('started_ix', XMLDB_INDEX_NOTUNIQUE, ['startedat']));
+        $index = new xmldb_index('status_ix', XMLDB_INDEX_NOTUNIQUE, ['status']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('scope_ix', XMLDB_INDEX_NOTUNIQUE, ['scopecontextid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('started_ix', XMLDB_INDEX_NOTUNIQUE, ['startedat']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         // Table: tool_whoiswho_finding.
         $table = new xmldb_table('tool_whoiswho_finding');
@@ -71,11 +80,26 @@ function xmldb_tool_whoiswho_upgrade(int $oldversion): bool {
             $dbman->create_table($table);
         }
         // Indexes.
-        $dbman->add_index($table, new xmldb_index('user_ctx_ix', XMLDB_INDEX_NOTUNIQUE, ['userid', 'contextid']));
-        $dbman->add_index($table, new xmldb_index('type_ix', XMLDB_INDEX_NOTUNIQUE, ['type']));
-        $dbman->add_index($table, new xmldb_index('resolved_ix', XMLDB_INDEX_NOTUNIQUE, ['resolved']));
-        $dbman->add_index($table, new xmldb_index('lastseen_ix', XMLDB_INDEX_NOTUNIQUE, ['lastseenat']));
-        $dbman->add_index($table, new xmldb_index('cap_res_ix', XMLDB_INDEX_NOTUNIQUE, ['capability', 'resolved']));
+        $index = new xmldb_index('user_ctx_ix', XMLDB_INDEX_NOTUNIQUE, ['userid', 'contextid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('type_ix', XMLDB_INDEX_NOTUNIQUE, ['type']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('resolved_ix', XMLDB_INDEX_NOTUNIQUE, ['resolved']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('lastseen_ix', XMLDB_INDEX_NOTUNIQUE, ['lastseenat']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('cap_res_ix', XMLDB_INDEX_NOTUNIQUE, ['capability', 'resolved']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         // Table: tool_whoiswho_finding_cap.
         $table = new xmldb_table('tool_whoiswho_finding_cap');
@@ -90,9 +114,18 @@ function xmldb_tool_whoiswho_upgrade(int $oldversion): bool {
             $dbman->create_table($table);
         }
         // Indexes.
-        $dbman->add_index($table, new xmldb_index('finding_ix', XMLDB_INDEX_NOTUNIQUE, ['findingid']));
-        $dbman->add_index($table, new xmldb_index('cap_ix', XMLDB_INDEX_NOTUNIQUE, ['capname']));
-        $dbman->add_index($table, new xmldb_index('perm_ix', XMLDB_INDEX_NOTUNIQUE, ['permission']));
+        $index = new xmldb_index('finding_ix', XMLDB_INDEX_NOTUNIQUE, ['findingid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('cap_ix', XMLDB_INDEX_NOTUNIQUE, ['capname']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $index = new xmldb_index('perm_ix', XMLDB_INDEX_NOTUNIQUE, ['permission']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         upgrade_plugin_savepoint(true, 2025090300, 'tool', 'whoiswho');
     }
