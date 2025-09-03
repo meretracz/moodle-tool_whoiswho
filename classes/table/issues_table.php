@@ -373,13 +373,15 @@ class issues_table extends table_sql {
         global $OUTPUT;
         $ctxid = (int) $row->contextid;
 
-        // Build return URL, ensuring userids[] are appended correctly (moodle_url disallows array params directly).
+        // Build return URL, ensuring userids are appended as CSV (moodle_url disallows array params directly).
         $basefilters = $this->filters;
         unset($basefilters['userids']);
         $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $basefilters);
-        if (!empty($this->filters['userids']) && is_array($this->filters['userids'])) {
-            foreach ($this->filters['userids'] as $uid) {
-                $returnurl->param('userids[]', (int) $uid);
+        if (!empty($this->filters['userids'])) {
+            $uids = is_array($this->filters['userids']) ? $this->filters['userids'] : explode(',', (string) $this->filters['userids']);
+            $csv = implode(',', array_map('intval', $uids));
+            if ($csv !== '') {
+                $returnurl->param('userids', $csv);
             }
         }
 
@@ -396,7 +398,17 @@ class issues_table extends table_sql {
             'contextid' => $ctxid,
             'userid' => (int) $row->userid,
         ]);
-        $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters);
+        // Rebuild return URL for the recheck link in the same CSV-safe way.
+        $basefilters2 = $this->filters;
+        unset($basefilters2['userids']);
+        $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $basefilters2);
+        if (!empty($this->filters['userids'])) {
+            $uids = is_array($this->filters['userids']) ? $this->filters['userids'] : explode(',', (string) $this->filters['userids']);
+            $csv = implode(',', array_map('intval', $uids));
+            if ($csv !== '') {
+                $returnurl->param('userids', $csv);
+            }
+        }
         $recheckurl = new moodle_url('/admin/tool/whoiswho/view/recheck_user.php', [
             'userid' => (int) $row->userid,
             'sesskey' => sesskey(),

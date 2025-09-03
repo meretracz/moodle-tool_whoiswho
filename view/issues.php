@@ -37,7 +37,13 @@ admin_externalpage_setup('tool_whoiswho_dashboard');
 $fullname = optional_param('fullname', '', PARAM_TEXT);
 $contextlevel = optional_param('contextlevel', 0, PARAM_INT);
 $userid = optional_param('userid', 0, PARAM_INT);
-$userids = optional_param_array('userids', [], PARAM_INT);
+// Accept comma-separated list of user IDs for filtering.
+$useridscsv = optional_param('userids', '', PARAM_SEQUENCE);
+// Normalize to integer array for internal use.
+$userids = [];
+if ($useridscsv !== '') {
+    $userids = array_values(array_filter(array_map('intval', explode(',', $useridscsv))));
+}
 $status = optional_param('status', '', PARAM_ALPHA);
 
 // If userid is provided, get the user's name for pre-filling the filter.
@@ -55,16 +61,10 @@ $urlparams = [
     'userid' => $userid,
     'status' => $status,
 ];
-if (!empty($userids)) {
-    $urlparams['userids'] = array_map('intval', $userids);
+if ($useridscsv !== '') {
+    $urlparams['userids'] = $useridscsv; // scalar CSV
 }
 $url = new moodle_url('/admin/tool/whoiswho/view/issues.php', $urlparams);
-// Append repeated userids[] params (cannot pass arrays directly to moodle_url).
-if (!empty($userids)) {
-    foreach ($userids as $uid) {
-        $url->param('userids[]', (int) $uid);
-    }
-}
 
 $PAGE->set_url($url);
 $PAGE->set_title(get_string('title:issues', 'tool_whoiswho'));
@@ -80,7 +80,7 @@ if ($userid > 0) {
     $filters['userid'] = $userid;
 }
 if (!empty($userids)) {
-    $filters['userids'] = array_map('intval', $userids);
+    $filters['userids'] = $userids; // array for table filtering
 }
 
 // Create output object.
