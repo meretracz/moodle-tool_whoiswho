@@ -120,13 +120,4 @@ if ($hassiteconfig) {
 
     $ADMIN->add('tool_whoiswho', $dashboard);
 
-    // TODO Check if we need a separate capability for this.
-    $issuespage = new admin_externalpage(
-        'tool_whoiswho_issues',
-        get_string('externalpage:issues', 'tool_whoiswho'),
-        new moodle_url('/admin/tool/whoiswho/view/issues.php'),
-        'tool/whoiswho:dashboardaccess'
-    );
-    $ADMIN->add('tool_whoiswho', $issuespage);
-
 }
