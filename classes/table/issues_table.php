@@ -373,9 +373,19 @@ class issues_table extends table_sql {
         global $OUTPUT;
         $ctxid = (int) $row->contextid;
 
+        // Build return URL, ensuring userids[] are appended correctly (moodle_url disallows array params directly).
+        $basefilters = $this->filters;
+        unset($basefilters['userids']);
+        $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $basefilters);
+        if (!empty($this->filters['userids']) && is_array($this->filters['userids'])) {
+            foreach ($this->filters['userids'] as $uid) {
+                $returnurl->param('userids[]', (int) $uid);
+            }
+        }
+
         $fixurl = new moodle_url('/admin/tool/whoiswho/view/fix_issue.php', [
             'id' => (int) $row->id,
-            'returnurl' => (new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters))->out_as_local_url(false),
+            'returnurl' => $returnurl->out_as_local_url(false),
         ]);
         $roleurl = new moodle_url('/admin/roles/assign.php', ['contextid' => $ctxid]);
         $capurl = new moodle_url('/admin/roles/capability.php', [
