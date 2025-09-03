@@ -25,11 +25,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_whoiswho\scanner;
+namespace tool_whoiswho\local\scanner;
 
 use tool_whoiswho\local\scan_manager;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class capability_issue_scanner
@@ -143,23 +141,23 @@ class capability_issue_scanner extends base_scanner {
     private function resolve_config(): array {
         // 1) Read plugin-level defaults/flags.
         $cfg = get_config('tool_whoiswho');
-        [$overlapenabled, $conflictenabled, $defaultIncludeParents, $defaultlevelsstr] = $this->get_plugin_flags($cfg);
+        [$overlapenabled, $conflictenabled, $defaultincludeparents, $defaultlevelsstr] = $this->get_plugin_flags($cfg);
 
         // 2) Read ad-hoc overrides supplied to the scanner.
-        [$contextid, $useridsRaw, $includeparentsOverride, $levelsoverride, $overlaponly, $initiatedby] =
+        [$contextid, $useridsraw, $includeparentsoverride, $levelsoverride, $overlaponly, $initiatedby] =
             $this->get_override_values($this->config);
 
         // 3) Normalize arrays and decide effective values.
-        $userids = $this->normalize_ids_array($useridsRaw);
-        $includeparents = ($includeparentsOverride !== null)
-            ? (bool) $includeparentsOverride
-            : (bool) $defaultIncludeParents;
+        $userids = $this->normalize_ids_array($useridsraw);
+        $includeparents = ($includeparentsoverride !== null)
+            ? (bool) $includeparentsoverride
+            : (bool) $defaultincludeparents;
 
         $levels = [];
         if (!empty($levelsoverride)) {
             $levels = $this->normalize_ids_array($levelsoverride);
-        } else if (!empty($defaultLevelsStr)) {
-            $levels = $this->normalize_ids_array($this->parse_levels_from_string((string) $defaultLevelsStr));
+        } else if (!empty($defaultlevelsstr)) {
+            $levels = $this->normalize_ids_array($this->parse_levels_from_string((string) $defaultlevelsstr));
         }
 
         // 4) Resolve root context if provided.
@@ -207,16 +205,16 @@ class capability_issue_scanner extends base_scanner {
      */
     private function get_override_values(array $config): array {
         $contextid = isset($config['contextid']) ? (int) $config['contextid'] : null;
-        $useridsRaw = (array) ($config['userids'] ?? []);
-        $includeparentsOverride = array_key_exists('includeparents', $config) ? (bool) $config['includeparents'] : null;
+        $useridsraw = (array) ($config['userids'] ?? []);
+        $includeparentsoverride = array_key_exists('includeparents', $config) ? (bool) $config['includeparents'] : null;
         $levelsoverride = (array) ($config['levels'] ?? []);
         $overlaponly = !empty($config['overlap_only']);
         $initiatedby = isset($config['initiatedby']) ? (int) $config['initiatedby'] : null;
 
         return [
             $contextid,
-            $useridsRaw,
-            $includeparentsOverride,
+            $useridsraw,
+            $includeparentsoverride,
             $levelsoverride,
             $overlaponly,
             $initiatedby,
@@ -436,4 +434,3 @@ class capability_issue_scanner extends base_scanner {
     }
 
 }
-

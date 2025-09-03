@@ -22,9 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_whoiswho\scanner;
-
-defined('MOODLE_INTERNAL') || die();
+namespace tool_whoiswho\local\scanner;
 
 /**
  * Abstract base class for security scanners

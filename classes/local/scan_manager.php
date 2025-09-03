@@ -26,8 +26,6 @@
 
 namespace tool_whoiswho\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class scan_manager
  *
@@ -263,13 +261,14 @@ class scan_manager {
      */
     public static function insert_cap_rows(int $findingid, string $capname, array $sets): void {
         global $DB;
-        foreach (
-            [
-                'allow' => CAP_ALLOW,
-                'prevent' => CAP_PREVENT,
-                'prohibit' => CAP_PROHIBIT,
-            ] as $label => $perm
-        ) {
+
+        $capvalues = [
+            'allow' => CAP_ALLOW,
+            'prevent' => CAP_PREVENT,
+            'prohibit' => CAP_PROHIBIT,
+        ];
+
+        foreach ($capvalues as $label => $perm) {
             $roleids = array_values($sets[$label] ?? []);
             foreach ($roleids as $rid) {
                 $DB->insert_record(
@@ -288,6 +287,12 @@ class scan_manager {
 
     /**
      * Compute capability overlaps and conflicts for a user within a context (optionally parents).
+     *
+     * @param int $userid
+     * @param \context|null $context
+     * @param bool $includeparents
+     *
+     * @return array
      */
     public static function find_capability_issues_for_user(
         int $userid,
