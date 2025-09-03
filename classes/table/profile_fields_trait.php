@@ -24,8 +24,6 @@
 
 namespace tool_whoiswho\table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Trait providing shared functionality for handling profile fields in tables.
  */
@@ -72,14 +70,15 @@ trait profile_fields_trait {
      * Build WHERE clause for fullname filter.
      *
      * @param string $fullname The fullname to filter by
+     *
      * @return array Array containing WHERE clause fragment and parameters
      */
     protected function build_fullname_filter(string $fullname): array {
         global $DB;
-        
+
         $where = '';
         $params = [];
-        
+
         $fullname = trim($fullname);
         if ($fullname !== '') {
             $like = '%' . $fullname . '%';
@@ -90,7 +89,8 @@ trait profile_fields_trait {
                 ) . ')';
             $params['fn'] = $like;
         }
-        
+
         return [$where, $params];
     }
+
 }

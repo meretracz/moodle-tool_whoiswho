@@ -97,7 +97,8 @@ class profilefield_overview_table extends flexible_table {
      *
      * @return string
      */
-    public function col_value($row): string {
+    public function col_value(object $row): string {
+
         // For checkbox fields, display badges.
         if ($this->fieldtype === 'checkbox') {
             if ($row->value === '1') {
@@ -118,7 +119,7 @@ class profilefield_overview_table extends flexible_table {
      *
      * @return string
      */
-    public function col_usercount($row): string {
+    public function col_usercount(object $row): string {
         return (string) $row->usercount;
     }
 
@@ -129,7 +130,7 @@ class profilefield_overview_table extends flexible_table {
      *
      * @return string
      */
-    public function col_roles($row): string {
+    public function col_roles(object $row): string {
         return !empty($row->roles) ? $row->roles : get_string('noroles', 'tool_whoiswho');
     }
 
@@ -155,7 +156,7 @@ class profilefield_overview_table extends flexible_table {
      *
      * @return string
      */
-    public function col_action($row): string {
+    public function col_action(object $row): string {
         // Link to issues page filtered by this row's user IDs.
         $params = [];
         if (!empty($row->userids) && is_array($row->userids)) {
