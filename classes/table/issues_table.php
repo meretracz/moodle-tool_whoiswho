@@ -344,10 +344,17 @@ class issues_table extends table_sql {
 
         $permurl = new moodle_url('/admin/roles/override.php', ['contextid' => $ctxid]);
         $roleurl = new moodle_url('/admin/roles/assign.php', ['contextid' => $ctxid]);
+        $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters);
+        $recheckurl = new moodle_url('/admin/tool/whoiswho/view/recheck_user.php', [
+            'userid' => (int) $row->userid,
+            'sesskey' => sesskey(),
+            'returnurl' => $returnurl->out_as_local_url(false),
+        ]);
 
         $out = [];
         $out[] = html_writer::link($permurl, '[' . get_string('action:changepermission', 'tool_whoiswho') . ']');
         $out[] = html_writer::link($roleurl, '[' . get_string('action:changerole', 'tool_whoiswho') . ']');
+        $out[] = html_writer::link($recheckurl, '[' . get_string('action:recheck', 'tool_whoiswho') . ']');
 
         return implode(' ', $out);
     }

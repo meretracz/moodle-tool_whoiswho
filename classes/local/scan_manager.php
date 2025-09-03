@@ -550,6 +550,123 @@ class scan_manager {
     }
 
     /**
+     * Run an adhoc scan for specific users, detecting both conflicts and overlaps.
+     *
+     * @param \context|null $rootcontext Optional root context to limit scope.
+     * @param array|null $userids         List of user IDs to evaluate. If empty, nothing is scanned.
+     * @param int|null $initiatedby       User ID who initiated the scan (for audit purposes).
+     * @return void
+     */
+    public static function run_users(?\context $rootcontext = null, ?array $userids = null, ?int $initiatedby = null): void {
+        global $DB;
+
+        $userids = array_values(array_filter(array_map('intval', (array) $userids)));
+        if (empty($userids)) {
+            return;
+        }
+
+        $cfg = get_config('tool_whoiswho');
+        $overlapenabled = !empty($cfg->scan_overlap_enabled);
+        $conflictenabled = !empty($cfg->scan_conflict_enabled);
+        $includeparents = !empty($cfg->scan_include_parents);
+        $levels = [];
+        if (!empty($cfg->scan_contextlevels)) {
+            $levels = array_values(
+                array_filter(
+                    array_map(
+                        'intval',
+                        preg_split('/[,\s]+/', (string) $cfg->scan_contextlevels)
+                    )
+                )
+            );
+        }
+
+        $scan = (object) [
+            'startedat' => time(),
+            'finishedat' => null,
+            'status' => 'running',
+            'initiatedby' => $initiatedby,
+            'scopecontextid' => $rootcontext ? $rootcontext->id : null,
+            'meta' => json_encode(['mode' => 'adhoc-users', 'users' => count($userids)]),
+        ];
+        $scanid = $DB->insert_record('tool_whoiswho_scan', $scan);
+
+        try {
+            [$pairs, $meta] = self::select_pairs($rootcontext, $userids, $levels);
+            $new = 0;
+            $upd = 0;
+            $count = 0;
+            foreach ($pairs as $p) {
+                $count++;
+                $userid = (int) $p['userid'];
+                $cx = \context::instance_by_id((int) $p['contextid'], MUST_EXIST);
+                $issues = self::find_capability_issues_for_user($userid, $cx, $includeparents);
+                if (empty($issues['contexts'][$cx->id])) {
+                    continue;
+                }
+                $cxpayload = $issues['contexts'][$cx->id];
+
+                if ($conflictenabled) {
+                    foreach ($cxpayload['conflicts'] as $cap => $sets) {
+                        [$created] = self::upsert_finding(
+                            $scanid,
+                            $userid,
+                            $cx->id,
+                            $cap,
+                            'cap_conflict',
+                            3 + (empty($sets['prohibit']) ? 0 : 1),
+                            $sets
+                        );
+                        $created ? $new++ : $upd++;
+                    }
+                }
+
+                if ($overlapenabled) {
+                    foreach ($cxpayload['overlaps'] as $cap => $roleids) {
+                        $sets = ['allow' => array_values($roleids), 'prevent' => [], 'prohibit' => []];
+                        [$created] = self::upsert_finding(
+                            $scanid,
+                            $userid,
+                            $cx->id,
+                            $cap,
+                            'cap_overlap',
+                            2,
+                            $sets
+                        );
+                        $created ? $new++ : $upd++;
+                    }
+                }
+            }
+
+            $DB->update_record(
+                'tool_whoiswho_scan',
+                (object) [
+                    'id' => $scanid,
+                    'finishedat' => time(),
+                    'status' => 'success',
+                    'meta' => json_encode(array_merge(['mode' => 'adhoc-users'], $meta, [
+                        'pairs' => $count,
+                        'new' => $new,
+                        'updated' => $upd,
+                    ])),
+                ]
+            );
+
+        } catch (\Throwable $e) {
+            $DB->update_record(
+                'tool_whoiswho_scan',
+                (object) [
+                    'id' => $scanid,
+                    'finishedat' => time(),
+                    'status' => 'failed',
+                    'meta' => json_encode(['mode' => 'adhoc-users', 'error' => $e->getMessage()]),
+                ]
+            );
+            throw $e;
+        }
+    }
+
+    /**
      * Selects distinct user/context pairs based on various criteria and returns the results along with metadata.
      *
      * @param \context|null $rootctx The context to limit the selection to (can include all its subcontexts). If null, no context

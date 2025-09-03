@@ -25,8 +25,6 @@
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use tool_whoiswho\table\users_overview_table;
-
 defined('MOODLE_INTERNAL') || die;
 
 $context = context_system::instance();
@@ -63,58 +61,16 @@ if ($userid > 0) {
     $filters['userid'] = $userid;
 }
 
-// Create and setup the table.
-$table = new users_overview_table('whoiswho_users', $filters);
-$table->define_baseurl($PAGE->url);
-$table->is_downloadable(true);
-$table->show_download_buttons_at([TABLE_P_BOTTOM]);
+// Create output object.
+$page = new \tool_whoiswho\output\users_overview($filters, $PAGE->url, $download);
 
-// Handle download.
-if ($download) {
-    $table->is_downloading($download, 'whoiswho_users_' . date('Ymd'));
-}
-
-if (!$table->is_downloading()) {
+// Handle download or display page.
+if (!$page->is_downloading()) {
     echo $OUTPUT->header();
-
-    // Add filter form.
-    $filterurl = $PAGE->url;
-    echo '<div class="whoiswho-filters mb-3">';
-    echo '<form method="get" action="' . $filterurl . '" class="form-inline">';
-
-    echo '<div class="form-group mx-2">';
-    echo '<label for="fullname" class="sr-only">' . get_string('filter:fullname', 'tool_whoiswho') . '</label>';
-    echo '<input type="text" name="fullname" id="fullname" class="form-control" placeholder="' .
-        get_string('filter:fullname', 'tool_whoiswho') . '" value="' . s($fullname) . '">';
-    echo '</div>';
-
-    echo '<div class="form-group mx-2">';
-    echo '<label class="form-check-label">';
-    echo '<input type="checkbox" name="withissues" value="1" class="form-check-input" ' .
-        ($withissues ? 'checked' : '') . '> ';
-    echo get_string('filter:withissues', 'tool_whoiswho');
-    echo '</label>';
-    echo '</div>';
-
-    echo '<button type="submit" class="btn btn-primary mx-2">' . get_string('filter') . '</button>';
-    echo '<a href="' . $filterurl . '" class="btn btn-secondary">' . get_string('clear') . '</a>';
-
-    echo '</form>';
-    echo '</div>';
-
-    // Add link back to dashboard.
-    echo '<div class="mb-3">';
-    echo html_writer::link(
-        new moodle_url('/admin/tool/whoiswho/view/dashboard.php'),
-        '← ' . get_string('backtodashboard', 'tool_whoiswho'),
-        ['class' => 'btn btn-secondary']
-    );
-    echo '</div>';
-}
-
-// Display the table.
-$table->out(50, true);
-
-if (!$table->is_downloading()) {
+    echo $OUTPUT->heading(get_string('heading:users', 'tool_whoiswho'));
+    echo $OUTPUT->render($page);
     echo $OUTPUT->footer();
+} else {
+    // Output table for download.
+    echo $page->get_table_output();
 }

@@ -57,16 +57,7 @@ $PAGE->set_url($url);
 $PAGE->set_title(get_string('title:issues', 'tool_whoiswho'));
 $PAGE->set_heading(get_string('heading:issues', 'tool_whoiswho'));
 
-// Filter form.
-$mform = new \tool_whoiswho\form\issues_filter_form($url->out(false));
-$mform->set_data(['fullname' => $fullname, 'contextlevel' => $contextlevel]);
-
-echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('heading:issues', 'tool_whoiswho'));
-
-$mform->display();
-
-// Build table.
+// Build filters array.
 $filters = [
     'fullname' => $fullname,
     'contextlevel' => $contextlevel,
@@ -74,10 +65,13 @@ $filters = [
 if ($userid > 0) {
     $filters['userid'] = $userid;
 }
-$table = new \tool_whoiswho\table\issues_table('tool_whoiswho_issues', $filters);
-$table->define_baseurl($url);
-$table->pagesize(25, 0);
-$table->out(25, true);
 
+// Create output object.
+$page = new \tool_whoiswho\output\issues_overview($filters, $url);
+
+// Render the page.
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('heading:issues', 'tool_whoiswho'));
+echo $OUTPUT->render($page);
 echo $OUTPUT->footer();
 

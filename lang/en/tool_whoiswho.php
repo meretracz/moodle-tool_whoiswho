@@ -92,6 +92,7 @@ $string['capability_issue_scanner_desc'] = 'Detects overlaps and conflicts at us
 
 // Notices.
 $string['notice:queued_overlap_scan'] = 'Overlap scan queued. It will run shortly via cron.';
+$string['notice:queued_user_scan'] = 'User recheck queued. It will run shortly via cron.';
 
 // Card Titles.
 $string['issues:dashboard'] = 'Issues';
@@ -128,6 +129,7 @@ $string['issue:conflict'] = 'Issue: conflict';
 // Actions.
 $string['action:changepermission'] = 'change permission';
 $string['action:changerole'] = 'change role';
+$string['action:recheck'] = 'recheck issues';
 
 // Scanner messages (capability_scanner).
 $string['guest_dangerous_caps'] = 'Guest role has dangerous capabilities assigned';
