@@ -1,0 +1,50 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @package   tool_whoiswho
+    @copyright 2025 LdesignMedia.nl
+    @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+    
+    @template tool_whoiswho/issues_overview
+    
+    Issues overview page template displaying filter form and issues table.
+    
+    Context variables required for this template:
+    * dashboardurl - URL to dashboard page
+    * filterform - HTML for the filter form
+    * table - HTML for the issues table
+    * hasfilters - Boolean indicating if filters are active
+}}
+
+<div class="tool-whoiswho-issues-overview">
+    {{! Back to dashboard button }}
+    <div class="mb-3">
+        <a href="{{{dashboardurl}}}" class="btn btn-secondary">
+            ← {{#str}}backtodashboard, tool_whoiswho{{/str}}
+        </a>
+    </div>
+    
+    {{! Filter form }}
+    <div class="issues-filter-form mb-3">
+        {{{filterform}}}
+    </div>
+    
+    {{! Issues table }}
+    <div class="issues-table-container">
+        {{{table}}}
+    </div>
+</div>

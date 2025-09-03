@@ -1,0 +1,70 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @package   tool_whoiswho
+    @copyright 2025 LdesignMedia.nl
+    @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+    
+    @template tool_whoiswho/users_overview
+    
+    Users overview page template displaying filter form and users table.
+    
+    Context variables required for this template:
+    * dashboardurl - URL to dashboard page
+    * pageurl - Current page URL for form submission
+    * fullname - Current fullname filter value
+    * withissues - Boolean for users with issues filter
+    * table - HTML for the users table
+    * hasfilters - Boolean indicating if filters are active
+}}
+
+<div class="tool-whoiswho-users-overview">
+    {{! Filter form }}
+    <div class="whoiswho-filters mb-3">
+        <form method="get" action="{{{pageurl}}}" class="form-inline">
+            <div class="form-group mx-2">
+                <label for="fullname" class="sr-only">{{#str}}filter:fullname, tool_whoiswho{{/str}}</label>
+                <input type="text" name="fullname" id="fullname" class="form-control" 
+                       placeholder="{{#str}}filter:fullname, tool_whoiswho{{/str}}" 
+                       value="{{{fullname}}}">
+            </div>
+            
+            <div class="form-group mx-2">
+                <label class="form-check-label">
+                    <input type="checkbox" name="withissues" value="1" class="form-check-input" 
+                           {{#withissues}}checked{{/withissues}}>
+                    {{#str}}filter:withissues, tool_whoiswho{{/str}}
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary mx-2">{{#str}}filter{{/str}}</button>
+            <a href="{{{pageurl}}}" class="btn btn-secondary">{{#str}}clear{{/str}}</a>
+        </form>
+    </div>
+    
+    {{! Back to dashboard button }}
+    <div class="mb-3">
+        <a href="{{{dashboardurl}}}" class="btn btn-secondary">
+            ← {{#str}}backtodashboard, tool_whoiswho{{/str}}
+        </a>
+    </div>
+    
+    {{! Users table }}
+    <div class="users-table-container">
+        {{{table}}}
+    </div>
+</div>
