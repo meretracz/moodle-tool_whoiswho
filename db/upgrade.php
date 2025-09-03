@@ -30,7 +30,7 @@ function xmldb_tool_whoiswho_upgrade(int $oldversion): bool {
     $dbman = $DB->get_manager();
 
     // 2024090202: introduce core tables for scans and findings.
-    if ($oldversion < 2024090202) {
+    if ($oldversion < 2025090300) {
         // Table: tool_whoiswho_scan.
         $table = new xmldb_table('tool_whoiswho_scan');
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
@@ -94,7 +94,7 @@ function xmldb_tool_whoiswho_upgrade(int $oldversion): bool {
         $dbman->add_index($table, new xmldb_index('cap_ix', XMLDB_INDEX_NOTUNIQUE, ['capname']));
         $dbman->add_index($table, new xmldb_index('perm_ix', XMLDB_INDEX_NOTUNIQUE, ['permission']));
 
-        upgrade_plugin_savepoint(true, 2024090202, 'tool', 'whoiswho');
+        upgrade_plugin_savepoint(true, 2025090300, 'tool', 'whoiswho');
     }
 
     return true;
