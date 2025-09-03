@@ -51,10 +51,10 @@ class issues_filter_form extends moodleform {
 
         $contextoptions = [
             0 => get_string('filter:anycontext', 'tool_whoiswho'),
-            CONTEXT_SYSTEM => get_string('contextsystem'),
-            CONTEXT_COURSECAT => get_string('contextcoursecat'),
-            CONTEXT_COURSE => get_string('contextcourse'),
-            CONTEXT_MODULE => get_string('contextmodule'),
+            CONTEXT_SYSTEM => get_string('contextsystem', 'tool_whoiswho'),
+            CONTEXT_COURSECAT => get_string('contextcoursecat', 'tool_whoiswho'),
+            CONTEXT_COURSE => get_string('contextcourse', 'tool_whoiswho'),
+            CONTEXT_MODULE => get_string('contextmodule', 'tool_whoiswho'),
         ];
         $mform->addElement('select', 'contextlevel', get_string('filter:context', 'tool_whoiswho'), $contextoptions);
         $mform->setType('contextlevel', PARAM_INT);
