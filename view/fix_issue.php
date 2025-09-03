@@ -146,6 +146,13 @@ if ($data = $mform->get_data()) {
 // Output form.
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('heading:fix_issue', 'tool_whoiswho'));
+$recheckurl = new moodle_url('/admin/tool/whoiswho/view/recheck_user.php', [
+    'userid' => (int) $finding->userid,
+    'sesskey' => sesskey(),
+    'returnurl' => $url->out_as_local_url(false),
+]);
+$recheckbtn = new single_button($recheckurl, get_string('action:recheck', 'tool_whoiswho'), 'post');
+echo $OUTPUT->render($recheckbtn);
 $mform->set_data(['id' => $id]);
 $mform->display();
 echo $OUTPUT->footer();

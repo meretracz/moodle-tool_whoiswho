@@ -249,7 +249,7 @@ class issues_table extends table_sql {
     protected function col_profilefield(object $row, int $pfid): string {
         $fieldname = 'profilefield_' . $pfid;
 
-        if (!isset($row->$fieldname) || $row->$fieldname === null || $row->$fieldname === '') {
+        if (!isset($row->$fieldname) || $row->$fieldname === '') {
             return html_writer::tag('span', '-');
         }
 
@@ -259,10 +259,16 @@ class issues_table extends table_sql {
         // Format checkbox fields as checkmarks or crosses.
         if ($fieldtype === 'checkbox') {
             if ($value === '1') {
-                return html_writer::tag('span', '✓', ['class' => 'badge badge-success', 'title' => get_string('yes')]);
+                return html_writer::tag('span', '✓', [
+                    'class' => 'badge badge-success',
+                    'title' => get_string('yes'),
+                ]);
             }
 
-            return html_writer::tag('span', '✗', ['class' => 'badge badge-danger', 'title' => get_string('no')]);
+            return html_writer::tag('span', '✗', [
+                'class' => 'badge badge-danger',
+                'title' => get_string('no'),
+            ]);
         }
 
         // Default formatting for other field types.
@@ -401,7 +407,10 @@ class issues_table extends table_sql {
 
         $fixurl = new moodle_url('/admin/tool/whoiswho/view/fix_issue.php', [
             'id' => (int) $row->id,
-            'returnurl' => (new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters))->out_as_local_url(false),
+            'returnurl' => (new moodle_url(
+                '/admin/tool/whoiswho/view/issues.php',
+                $this->filters
+            ))->out_as_local_url(false),
         ]);
         $roleurl = new moodle_url('/admin/roles/assign.php', ['contextid' => $ctxid]);
         $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters);
