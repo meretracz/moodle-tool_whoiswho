@@ -157,11 +157,12 @@ class profilefield_overview_table extends flexible_table {
      * @return string
      */
     public function col_action(object $row): string {
-        // Link to issues page filtered by this row's user IDs.
+        // Link to issues page filtered by this row's user IDs (CSV format).
         $url = new moodle_url('/admin/tool/whoiswho/view/issues.php');
         if (!empty($row->userids) && is_array($row->userids)) {
-            foreach ($row->userids as $uid) {
-                $url->param('userids[]', (int) $uid);
+            $csv = implode(',', array_map('intval', $row->userids));
+            if ($csv !== '') {
+                $url->param('userids', $csv);
             }
         }
 
