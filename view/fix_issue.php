@@ -70,14 +70,12 @@ foreach ($assigns as $a) {
     ], '*', IGNORE_MISSING);
     $current = $rc ? (int) $rc->permission : CAP_INHERIT;
 
-    // Effective value (may include parent contexts, prohibitions etc.).
-    $effective = null;
-    if (function_exists('role_context_capabilities')) {
-        $caps = role_context_capabilities($rid, $context);
-        if (isset($caps[$finding->capability])) {
-            $effective = (int) $caps[$finding->capability];
-        }
-    }
+    // Effective value computed along the context path (PROHIBIT wins).
+    $effective = \tool_whoiswho\local\scan_manager::role_effective_permission(
+        $rid,
+        $context,
+        (string) $finding->capability
+    );
 
     $rolesdata[$rid] = [
         'name' => $name,

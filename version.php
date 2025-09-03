@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_whoiswho';
-$plugin->version = 2025090303;
+$plugin->version = 2025090304;
 $plugin->release = '4.5.2';
 $plugin->supported = [405, 405];
 $plugin->requires = 2024100700;

@@ -203,11 +203,10 @@ class scan_manager {
         );
 
         if ($existing) {
-            $keepmanual = property_exists($existing, 'issuestate') && in_array($existing->issuestate, ['resolved', 'ignored'], true);
+            $keepmanual = property_exists($existing, 'issuestate')
+                && in_array($existing->issuestate, ['resolved', 'ignored'], true);
             $existing->lastseenat = $now;
-            if ($keepmanual) {
-                // Honor manual resolution/ignored: keep flags and state.
-            } else {
+            if (!$keepmanual) {
                 $existing->resolved = 0;
                 if (property_exists($existing, 'issuestate')) {
                     $existing->issuestate = 'pending';
@@ -355,7 +354,7 @@ class scan_manager {
 
             // Pre-compute the context path order to determine specificity.
             $pathids = array_values(array_filter(array_map('intval', explode('/', trim((string) $cx->path, '/')))));
-            $depthmap = array_flip($pathids); // contextid => depth index (0 = system ... N = most specific)
+            $depthmap = array_flip($pathids); // Contextid => depth index (0 = system ... N = most specific).
 
             foreach ($effectiveassigns as $a) {
                 $roleid = (int) $a->roleid;
@@ -480,6 +479,66 @@ class scan_manager {
     }
 
     /**
+     * Compute the effective permission for a single role/capability at the given context.
+     *
+     * Rules:
+     * - CAP_PROHIBIT on any parent context wins and cannot be overridden.
+     * - Otherwise, take the most specific non-inherit permission along the context path.
+     * - If no explicit permission is found, return CAP_INHERIT (0).
+     *
+     * @param int $roleid
+     * @param \context $context
+     * @param string $capability
+     * @return int One of CAP_INHERIT, CAP_ALLOW, CAP_PREVENT, CAP_PROHIBIT
+     */
+    public static function role_effective_permission(int $roleid, \context $context, string $capability): int {
+        global $DB;
+
+        $pathids = array_values(array_filter(array_map('intval', explode('/', trim((string) $context->path, '/')))));
+        if (empty($pathids)) {
+            return CAP_INHERIT;
+        }
+
+        [$insql, $inparams] = $DB->get_in_or_equal($pathids, SQL_PARAMS_NAMED, 'cid');
+        $params = array_merge(['rid' => $roleid, 'cap' => $capability], $inparams);
+
+        $records = $DB->get_records_select(
+            'role_capabilities',
+            "roleid = :rid AND capability = :cap AND contextid $insql",
+            $params
+        );
+
+        if (empty($records)) {
+            return CAP_INHERIT;
+        }
+
+        $depthmap = array_flip($pathids);
+        $effperm = CAP_INHERIT;
+        $effdepth = -1;
+        $locked = false;
+
+        foreach ($records as $rc) {
+            $perm = (int) $rc->permission;
+            if ($perm === CAP_INHERIT) {
+                continue;
+            }
+            $depth = $depthmap[(int) $rc->contextid] ?? -1;
+            if ($perm === CAP_PROHIBIT) {
+                return CAP_PROHIBIT; // Cannot be overridden.
+            }
+            if ($locked) {
+                continue;
+            }
+            if ($depth >= $effdepth) {
+                $effperm = $perm;
+                $effdepth = $depth;
+            }
+        }
+
+        return $effperm;
+    }
+
+    /**
      * Retrieves the name of a role based on its ID.
      *
      * This method fetches the role record from the database and returns its name.
@@ -538,7 +597,13 @@ class scan_manager {
                 'id' => $scanid,
                 'finishedat' => time(),
                 'status' => 'success',
-                'meta' => json_encode(['mode' => 'adhoc-overlap', 'note' => 'overlap scanning disabled', 'pairs' => 0, 'new' => 0, 'updated' => 0]),
+                'meta' => json_encode([
+                    'mode' => 'adhoc-overlap',
+                    'note' => 'overlap scanning disabled',
+                    'pairs' => 0,
+                    'new' => 0,
+                    'updated' => 0,
+                ]),
             ]
         );
     }
@@ -682,7 +747,7 @@ class scan_manager {
             // Fetch base role assignment contexts without restricting by level,
             // so we can expand to descendant module contexts if requested.
             $records = $DB->get_records_sql(
-                "SELECT DISTINCT ra.userid, ra.contextid, ctx.contextlevel AS ctxlevel, ctx.path AS ctxpath
+                "SELECT DISTINCT ra.id AS id, ra.userid, ra.contextid, ctx.contextlevel AS ctxlevel, ctx.path AS ctxpath
                    FROM {role_assignments} ra
                    JOIN {context} ctx ON ctx.id = ra.contextid
                   WHERE $where",
@@ -752,7 +817,7 @@ class scan_manager {
                 $params = array_merge($params, $lvlparams);
             }
             $records = $DB->get_records_sql(
-                "SELECT DISTINCT ra.userid, ra.contextid
+                "SELECT DISTINCT ra.id AS id, ra.userid, ra.contextid
                    FROM {role_assignments} ra
                    JOIN {context} ctx ON ctx.id = ra.contextid
                   WHERE $where",
@@ -775,7 +840,7 @@ class scan_manager {
             $params = $lvlparams;
         }
         $records = $DB->get_records_sql(
-            "SELECT DISTINCT ra.userid, ra.contextid
+            "SELECT DISTINCT ra.id AS id, ra.userid, ra.contextid
                FROM {role_assignments} ra
                JOIN {context} ctx ON ctx.id = ra.contextid
              $where",

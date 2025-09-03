@@ -71,12 +71,7 @@ if ($hassiteconfig) {
         );
         $settings->add($scannerheading);
 
-        $settings->add(new admin_setting_configcheckbox(
-            'tool_whoiswho/scan_overlap_enabled',
-            get_string('settings:scan_overlap_enabled', 'tool_whoiswho'),
-            get_string('settings:scan_overlap_enabled_desc', 'tool_whoiswho'),
-            1
-        ));
+        // Note: Overlap scanning is deprecated/disabled; setting removed from UI.
 
         $settings->add(new admin_setting_configcheckbox(
             'tool_whoiswho/scan_conflict_enabled',
