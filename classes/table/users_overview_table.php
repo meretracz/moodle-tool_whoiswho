@@ -293,9 +293,10 @@ class users_overview_table extends table_sql {
             'userid' => $row->id,
         ]);
 
-        $text = '[' . $issuecount . ' ' . get_string('issues', 'tool_whoiswho') . ']';
+        $text = $issuecount . ' ' . get_string('issues', 'tool_whoiswho');
+        $class = 'btn btn-sm btn-outline-danger';
 
-        return html_writer::link($url, $text);
+        return html_writer::link($url, $text, ['class' => $class]);
     }
 
 }
