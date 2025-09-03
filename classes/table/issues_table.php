@@ -57,6 +57,7 @@ class issues_table extends table_sql {
      *
      * @param string $uniqueid The unique identifier for the table instance.
      * @param array $filters   Optional filters to initialize the table with.
+     *
      * @return void
      */
     public function __construct(string $uniqueid, array $filters = []) {
@@ -80,6 +81,7 @@ class issues_table extends table_sql {
     protected function define_columns_and_headers(): void {
         $columns = [
             'issue',
+            'contextbadge',
             'firstname',
             'lastname',
             'profilefield',
@@ -90,6 +92,7 @@ class issues_table extends table_sql {
 
         $headers = [
             get_string('col:issue', 'tool_whoiswho'),
+            get_string('col:context', 'tool_whoiswho'),
             get_string('firstname'),
             get_string('lastname'),
             $this->profilefieldname
@@ -153,6 +156,7 @@ class issues_table extends table_sql {
      * Loads the name of a user profile field based on its ID.
      *
      * @param int $id The ID of the profile field to retrieve the name for.
+     *
      * @return string|null The name of the profile field if it exists, or null if not found.
      */
     protected function load_profilefield_name(int $id): ?string {
@@ -203,6 +207,7 @@ class issues_table extends table_sql {
      * properties of the provided row object.
      *
      * @param object $row An object containing issue details, including its type and capability.
+     *
      * @return string The formatted issue string, escaped for output.
      */
     public function col_issue(object $row): string {
@@ -223,6 +228,7 @@ class issues_table extends table_sql {
      * based on the data row provided.
      *
      * @param object $row An object containing the data row that includes profile data.
+     *
      * @return string The formatted profile field value or a placeholder indicating "not available".
      */
     public function col_profilefield(object $row): string {
@@ -241,6 +247,7 @@ class issues_table extends table_sql {
      *
      * @param object $row An object containing the context ID and user ID for which
      *                    the roles need to be determined.
+     *
      * @return string A string containing the names of the roles, separated by commas,
      *                    or an empty string if no roles are assigned or the context is invalid.
      */
@@ -275,6 +282,7 @@ class issues_table extends table_sql {
      * and a possible link to the context if applicable.
      *
      * @param object $row A data object containing the context ID to determine the location.
+     *
      * @return string The location string, potentially including a clickable link if the context supports it.
      */
     public function col_location(object $row): string {
@@ -304,6 +312,7 @@ class issues_table extends table_sql {
                     }
                 } catch (\Throwable $e) {
                     // Ignore linking errors.
+                    debugging($e->getMessage(), DEBUG_DEVELOPER);
                 }
             }
         }
@@ -320,6 +329,7 @@ class issues_table extends table_sql {
      * Generates action links for changing permissions and roles within a given context.
      *
      * @param object $row An object containing the context ID for the required action links.
+     *
      * @return string A concatenated string of HTML links for changing permissions and roles.
      */
     public function col_action(object $row): string {
@@ -333,6 +343,45 @@ class issues_table extends table_sql {
         $out[] = html_writer::link($roleurl, '[' . get_string('action:changerole', 'tool_whoiswho') . ']');
 
         return implode(' ', $out);
+    }
+
+    /**
+     * Generates a badge showing the context level for the issue.
+     *
+     * @param object $row An object containing the context level information.
+     *
+     * @return string HTML badge showing the context level.
+     */
+    public function col_contextbadge(object $row): string {
+        $contextlevel = (int) $row->contextlevel;
+
+        // Map context levels to badge labels and colors.
+        $contextinfo = $this->get_context_badge_info($contextlevel);
+
+        $badgeclass = 'badge badge-' . $contextinfo['color'];
+        $badgelabel = $contextinfo['label'];
+
+        return html_writer::tag('span', $badgelabel, ['class' => $badgeclass]);
+    }
+
+    /**
+     * Get badge information for a context level.
+     *
+     * @param int $contextlevel The context level constant.
+     *
+     * @return array Array with 'label' and 'color' keys.
+     */
+    protected function get_context_badge_info(int $contextlevel): array {
+
+        return match ($contextlevel) {
+            CONTEXT_SYSTEM => ['label' => get_string('contextsystem', 'tool_whoiswho'), 'color' => 'danger'],
+            CONTEXT_USER => ['label' => get_string('contextuser', 'tool_whoiswho'), 'color' => 'info'],
+            CONTEXT_COURSECAT => ['label' => get_string('contextcoursecat', 'tool_whoiswho'), 'color' => 'warning'],
+            CONTEXT_COURSE => ['label' => get_string('contextcourse', 'tool_whoiswho'), 'color' => 'orange'],
+            CONTEXT_MODULE => ['label' => get_string('contextmodule', 'tool_whoiswho'), 'color' => 'success'],
+            CONTEXT_BLOCK => ['label' => get_string('contextblock', 'tool_whoiswho'), 'color' => 'secondary'],
+            default => ['label' => get_string('unknown'), 'color' => 'light'],
+        };
     }
 
 }

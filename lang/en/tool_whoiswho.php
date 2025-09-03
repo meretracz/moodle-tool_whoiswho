@@ -46,6 +46,7 @@ $string['contextcoursecat'] = 'Course category context';
 $string['contextcourse'] = 'Course context';
 $string['contextmodule'] = 'Module context';
 $string['contextuser'] = 'User context';
+$string['contextblock'] = 'Block context';
 
 // Scanner settings.
 $string['settings:heading:scanner'] = 'Scanner options';
@@ -99,6 +100,7 @@ $string['overviewlinktitle:dashboard'] = 'More Details';
 
 // Table & filter labels.
 $string['col:issue'] = 'Issue';
+$string['col:context'] = 'Context';
 $string['col:profilefield'] = 'Profile field';
 $string['col:roles'] = 'All roles of user';
 $string['col:location'] = 'Location of issue';
