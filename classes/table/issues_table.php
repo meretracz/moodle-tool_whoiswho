@@ -42,15 +42,7 @@ use table_sql;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issues_table extends table_sql {
-
-    /** @var array Profile field IDs from config */
-    protected array $profilefieldids = [];
-
-    /** @var array Profile field names for headers */
-    protected array $profilefieldnames = [];
-
-    /** @var array Profile field types for formatting */
-    protected array $profilefieldtypes = [];
+    use profile_fields_trait;
 
     /** @var array Filter values */
     protected array $filters = [];
@@ -67,7 +59,7 @@ class issues_table extends table_sql {
         parent::__construct($uniqueid);
         $this->filters = $filters;
         $this->useridfield = 'uid';  // Set the correct user ID field name.
-        $this->init_profilefield();
+        $this->init_profilefields();
         $this->define_columns_and_headers();
         $this->set_attribute('class', 'generaltable whoiswho-issues-table');
         $this->sortable(true, 'lastname', SORT_ASC);
@@ -138,34 +130,6 @@ class issues_table extends table_sql {
         $this->set_count_sql('SELECT COUNT(1) FROM ' . $from . ' WHERE ' . ($where ?: '1=1'), $params);
     }
 
-    /**
-     * Initializes the profile field configuration by retrieving and setting
-     * profile field IDs and names based on the provided configuration.
-     *
-     * @return void
-     */
-    protected function init_profilefield(): void {
-        global $DB;
-
-        $cfg = get_config('tool_whoiswho');
-        $this->profilefieldids = [];
-        $this->profilefieldnames = [];
-        $this->profilefieldtypes = [];
-
-        if (!empty($cfg->profilefields)) {
-            $ids = preg_split('/[,\s]+/', (string) $cfg->profilefields);
-            $ids = array_values(array_filter(array_map('intval', (array) $ids)));
-
-            foreach ($ids as $id) {
-                $field = $DB->get_record('user_info_field', ['id' => $id], 'id, name, datatype', IGNORE_MISSING);
-                if ($field) {
-                    $this->profilefieldids[] = $id;
-                    $this->profilefieldnames[$id] = $field->name;
-                    $this->profilefieldtypes[$id] = $field->datatype;
-                }
-            }
-        }
-    }
 
     /**
      * Builds the WHERE clause and corresponding parameters for filtering database queries
@@ -180,15 +144,11 @@ class issues_table extends table_sql {
         $params = [];
 
         // Fullname filter: match firstname or lastname.
-        $fullname = trim((string) ($this->filters['fullname'] ?? ''));
-        if ($fullname !== '') {
-            $like = '%' . $fullname . '%';
-            $where[] = '(' . $DB->sql_like(
-                    $DB->sql_concat('u.firstname', '" "', 'u.lastname'),
-                    ':fn',
-                    false
-                ) . ')';
-            $params['fn'] = $like;
+        $fullname = (string) ($this->filters['fullname'] ?? '');
+        [$fullnamefilter, $fullnameparams] = $this->build_fullname_filter($fullname);
+        if ($fullnamefilter !== '') {
+            $where[] = $fullnamefilter;
+            $params = array_merge($params, $fullnameparams);
         }
 
         // Context level filter.

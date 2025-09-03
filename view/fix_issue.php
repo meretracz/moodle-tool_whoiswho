@@ -49,7 +49,24 @@ if ($returnurl) {
 }
 
 $PAGE->set_url($url);
-$PAGE->set_context($context);
+
+// Set page context appropriately based on context type.
+if ($context->contextlevel == CONTEXT_MODULE) {
+    // For module contexts, we need to set course and cm.
+    $cm = get_coursemodule_from_id(null, $context->instanceid, 0, false, MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+    $PAGE->set_cm($cm, $course);
+    $PAGE->set_context($context);
+} else if ($context->contextlevel == CONTEXT_COURSE) {
+    // For course contexts, set the course.
+    $course = $DB->get_record('course', ['id' => $context->instanceid], '*', MUST_EXIST);
+    $PAGE->set_course($course);
+    $PAGE->set_context($context);
+} else {
+    // For other contexts (system, user, category, block), just set context.
+    $PAGE->set_context($context);
+}
+
 $PAGE->set_title(get_string('title:fix_issue', 'tool_whoiswho'));
 $PAGE->set_heading(get_string('heading:fix_issue', 'tool_whoiswho'));
 
@@ -147,7 +164,14 @@ if ($data = $mform->get_data()) {
 }
 
 // Set form data before creating output.
-$mform->set_data(['id' => $id]);
+$formdata = ['id' => $id];
+// Set current permission values as defaults.
+foreach ($rolesdata as $rid => $info) {
+    $formdata["perm[$rid]"] = $info['current'];
+}
+// Set current status as default.
+$formdata['status'] = (string) ($finding->issuestate ?? 'pending');
+$mform->set_data($formdata);
 
 $page = new \tool_whoiswho\output\fix_issue($finding, $context, $mform, $rolesdata, $url);
 

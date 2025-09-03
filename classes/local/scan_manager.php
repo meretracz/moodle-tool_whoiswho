@@ -400,11 +400,14 @@ class scan_manager {
                 }
 
                 foreach ($effective as $capname => $info) {
-                    $capmatrix[$capname][$roleid] = (int) $info['perm'];
+                    // Keep both permission and depth so we can compare specificity later.
+                    $capmatrix[$capname][$roleid] = [
+                        'perm' => (int) $info['perm'],
+                        'depth' => (int) ($info['depth'] ?? -1),
+                    ];
                 }
             }
 
-            $overlaps = [];
             $conflicts = [];
             $capschecked = 0;
 
@@ -414,25 +417,48 @@ class scan_manager {
                 $allow = [];
                 $prevent = [];
                 $prohibit = [];
+                $allowdepths = [];
+                $preventdepths = [];
 
-                foreach ($roleperms as $rid => $perm) {
+                foreach ($roleperms as $rid => $info) {
+                    $perm = (int) ($info['perm'] ?? 0);
+                    $depth = (int) ($info['depth'] ?? -1);
                     if ($perm === CAP_ALLOW) {
-                        $allow[] = $rid;
+                        $allow[] = (int) $rid;
+                        $allowdepths[(int) $rid] = $depth;
                     } else if ($perm === CAP_PROHIBIT) {
-                        $prohibit[] = $rid;
+                        $prohibit[] = (int) $rid;
                     } else if ($perm === CAP_PREVENT) {
-                        $prevent[] = $rid;
+                        $prevent[] = (int) $rid;
+                        $preventdepths[(int) $rid] = $depth;
                     }
                 }
 
-                // Overlap detection disabled.
-
                 if (!empty($allow) && (!empty($prevent) || !empty($prohibit))) {
-                    $conflicts[$cap] = [
-                        'allow' => $allow,
-                        'prevent' => $prevent,
-                        'prohibit' => $prohibit,
-                    ];
+                    // If there are prohibits and allows, always a conflict (prohibit cannot be overridden).
+                    $finalprevent = $prevent;
+
+                    if (!empty($prevent)) {
+                        // Only treat PREVENT as conflicting if it is at least as specific as the strongest ALLOW.
+                        // Example: Course PREVENT vs Module ALLOW -> not a conflict; Module PREVENT vs Course ALLOW -> conflict.
+                        $maxallowdepth = max($allowdepths ?: [-1]);
+                        $finalprevent = array_values(
+                            array_filter(
+                                $prevent,
+                                function ($rid) use ($preventdepths, $maxallowdepth) {
+                                    return ($preventdepths[$rid] ?? -1) >= $maxallowdepth;
+                                }
+                            )
+                        );
+                    }
+
+                    if (!empty($prohibit) || !empty($finalprevent)) {
+                        $conflicts[$cap] = [
+                            'allow' => $allow,
+                            'prevent' => $finalprevent,
+                            'prohibit' => $prohibit,
+                        ];
+                    }
                 }
             }
 
@@ -440,12 +466,10 @@ class scan_manager {
                 'contextid' => $cx->id,
                 'contextname' => self::context_name($cx),
                 'roles' => $displayroles,
-                'overlaps' => $overlaps,
                 'conflicts' => $conflicts,
                 'stats' => [
                     'roles' => count($displayroles),
                     'caps_checked' => $capschecked,
-                    'overlap_caps' => count($overlaps),
                     'conflict_caps' => count($conflicts),
                 ],
             ];
@@ -612,8 +636,8 @@ class scan_manager {
      * Run an adhoc scan for specific users, detecting both conflicts and overlaps.
      *
      * @param \context|null $rootcontext Optional root context to limit scope.
-     * @param array|null $userids         List of user IDs to evaluate. If empty, nothing is scanned.
-     * @param int|null $initiatedby       User ID who initiated the scan (for audit purposes).
+     * @param array|null $userids        List of user IDs to evaluate. If empty, nothing is scanned.
+     * @param int|null $initiatedby      User ID who initiated the scan (for audit purposes).
      * @return void
      */
     public static function run_users(?\context $rootcontext = null, ?array $userids = null, ?int $initiatedby = null): void {
@@ -805,6 +829,7 @@ class scan_manager {
             }
 
             $meta = ['scope' => 'users' . ($rootctx ? '+ctx' : ''), 'users' => count($userids)];
+
             return [$pairs, $meta];
         }
 
@@ -857,8 +882,8 @@ class scan_manager {
     /**
      * Clean up resolved findings that no longer have active issues.
      *
-     * @param int $userid The user ID.
-     * @param int $contextid The context ID.
+     * @param int $userid         The user ID.
+     * @param int $contextid      The context ID.
      * @param array $activeissues Array of fingerprints for issues that are still active.
      * @return void
      */

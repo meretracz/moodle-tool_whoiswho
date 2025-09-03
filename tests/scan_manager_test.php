@@ -219,4 +219,44 @@ class scan_manager_test extends advanced_testcase {
         $this->assertSame($f1, $f2, 'Fingerprint should be order-insensitive and normalized');
     }
 
+    /**
+     * Ensures no conflict is reported when a child-context ALLOW overrides a parent PREVENT.
+     *
+     * Scenario: user is assigned a PREVENT-capable role at course level (e.g., student)
+     * and an ALLOW-capable role at a child module context (e.g., teacher). The tool should
+     * not flag a conflict in the module context because the more specific ALLOW wins and
+     * there is no PROHIBIT involved.
+     *
+     * @covers ::find_capability_issues_for_user
+     * @return void
+     */
+    public function test_no_conflict_when_child_allow_overrides_parent_prevent(): void {
+        $gen = $this->getDataGenerator();
+        $user = $gen->create_user();
+        $course = $gen->create_course();
+        $coursectx = context_course::instance($course->id);
+
+        // Create a module and get its context.
+        $page = $gen->create_module('page', ['course' => $course->id]);
+        $cm = get_coursemodule_from_instance('page', $page->id);
+        $modctx = context_module::instance($cm->id);
+
+        $cap = 'mod/assign:grade'; // Common teacher-only capability; students are typically prevented.
+
+        // Create roles with explicit settings at system so they appear along the path.
+        $roleprevent = $this->create_role_with_cap('r_parent_prevent', $cap, CAP_PREVENT);
+        $roleallow = $this->create_role_with_cap('r_child_allow', $cap, CAP_ALLOW);
+
+        // Assign PREVENT role at course (parent) and ALLOW role at module (child).
+        role_assign($roleprevent, $user->id, $coursectx->id);
+        role_assign($roleallow, $user->id, $modctx->id);
+
+        $issues = scan_manager::find_capability_issues_for_user($user->id, $modctx, false);
+        $this->assertArrayHasKey($modctx->id, $issues['contexts']);
+        $ctxpayload = $issues['contexts'][$modctx->id];
+
+        // No conflict expected: child ALLOW is more specific than parent PREVENT.
+        $this->assertArrayNotHasKey($cap, $ctxpayload['conflicts']);
+    }
+
 }

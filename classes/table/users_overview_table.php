@@ -43,15 +43,7 @@ use table_sql;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class users_overview_table extends table_sql {
-
-    /** @var array Profile field IDs from config */
-    protected array $profilefieldids = [];
-
-    /** @var array Profile field names for headers */
-    protected array $profilefieldnames = [];
-
-    /** @var array Profile field types for formatting */
-    protected array $profilefieldtypes = [];
+    use profile_fields_trait;
 
     /** @var array Filter values */
     protected array $filters = [];
@@ -132,33 +124,6 @@ class users_overview_table extends table_sql {
         $this->set_count_sql('SELECT COUNT(DISTINCT u.id) FROM ' . $from . ' WHERE ' . $where, $params);
     }
 
-    /**
-     * Initializes the profile field configuration.
-     *
-     * @return void
-     */
-    protected function init_profilefields(): void {
-        global $DB;
-
-        $cfg = get_config('tool_whoiswho');
-        $this->profilefieldids = [];
-        $this->profilefieldnames = [];
-        $this->profilefieldtypes = [];
-
-        if (!empty($cfg->profilefields)) {
-            $ids = preg_split('/[,\s]+/', (string) $cfg->profilefields);
-            $ids = array_values(array_filter(array_map('intval', (array) $ids)));
-
-            foreach ($ids as $id) {
-                $field = $DB->get_record('user_info_field', ['id' => $id], 'id, name, datatype', IGNORE_MISSING);
-                if ($field) {
-                    $this->profilefieldids[] = $id;
-                    $this->profilefieldnames[$id] = $field->name;
-                    $this->profilefieldtypes[$id] = $field->datatype;
-                }
-            }
-        }
-    }
 
     /**
      * Builds the WHERE clause and corresponding parameters for filtering.
@@ -166,20 +131,15 @@ class users_overview_table extends table_sql {
      * @return array An array containing the WHERE clause string and parameters.
      */
     protected function build_filters_where(): array {
-        global $DB;
         $where = [];
         $params = [];
 
         // Fullname filter.
-        $fullname = trim((string) ($this->filters['fullname'] ?? ''));
-        if ($fullname !== '') {
-            $like = '%' . $fullname . '%';
-            $where[] = '(' . $DB->sql_like(
-                    $DB->sql_concat('u.firstname', '" "', 'u.lastname'),
-                    ':fn',
-                    false
-                ) . ')';
-            $params['fn'] = $like;
+        $fullname = (string) ($this->filters['fullname'] ?? '');
+        [$fullnamefilter, $fullnameparams] = $this->build_fullname_filter($fullname);
+        if ($fullnamefilter !== '') {
+            $where[] = $fullnamefilter;
+            $params = array_merge($params, $fullnameparams);
         }
 
         // Always filter to show only users with issues (exclude overlaps as they are not real issues).

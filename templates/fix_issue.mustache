@@ -42,12 +42,14 @@
     }
 }}
 
-<form action="{{{recheckurl}}}" method="post" class="d-inline">
-    <input type="hidden" name="sesskey" value="{{sesskey}}">
-    <button type="submit" class="btn btn-primary">{{#str}}action:recheck, tool_whoiswho{{/str}}</button>
-</form>
-
 <div class="whoiswho-quicklinks mb-3 mt-3">
+    {{! Back to dashboard button }}
+    <div class="mb-3">
+        <a href="{{{dashboardurl}}}" class="btn btn-secondary">
+            ← {{#str}}backtodashboard, tool_whoiswho{{/str}}
+        </a>
+    </div>
+
     <strong>{{#str}}quicklinks, tool_whoiswho{{/str}}: </strong>
     <a href="{{{capoverviewurl}}}" class="btn btn-sm btn-outline-info me-2">{{#str}}action:capoverview, tool_whoiswho{{/str}}</a>
     <a href="{{{checkpermissionsurl}}}" class="btn btn-sm btn-outline-info">{{#str}}action:checkpermissions, tool_whoiswho{{/str}}</a>
