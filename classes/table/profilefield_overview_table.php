@@ -98,6 +98,7 @@ class profilefield_overview_table extends flexible_table {
      * @return string
      */
     public function col_value($row): string {
+
         // For checkbox fields, display badges.
         if ($this->fieldtype === 'checkbox') {
             if ($row->value === '1') {

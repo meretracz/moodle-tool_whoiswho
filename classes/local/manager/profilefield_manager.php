@@ -71,21 +71,8 @@ class profilefield_manager {
             $roles = self::get_user_roles($userids, $context);
             $issuecount = self::get_issue_count($userids);
 
-            // Format value for display.
-            if ($fieldtype === 'checkbox') {
-                if ($value->value === '1') {
-                    $displayvalue =
-                        \html_writer::tag('span', '✓', ['class' => 'badge badge-success', 'title' => get_string('yes')]);
-                } else {
-                    $displayvalue = \html_writer::tag('span', '✗', ['class' => 'badge badge-danger', 'title' => get_string('no')]);
-                }
-            } else {
-                // For non-checkbox fields, format as string to prevent XSS.
-                $displayvalue = format_string($value->value);
-            }
-
             $tabledata[] = [
-                'value' => $displayvalue,
+                'value' => $value->value,
                 'usercount' => $value->usercount,
                 'roles' => implode(', ', $roles),
                 'issuecount' => $issuecount,
