@@ -26,8 +26,6 @@
 
 namespace tool_whoiswho\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Scheduled task that executes the whoiswho scan.
  *
