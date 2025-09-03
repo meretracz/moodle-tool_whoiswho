@@ -384,7 +384,7 @@ class issues_table extends table_sql {
             CONTEXT_SYSTEM => ['label' => get_string('contextsystem', 'tool_whoiswho'), 'color' => 'danger'],
             CONTEXT_USER => ['label' => get_string('contextuser', 'tool_whoiswho'), 'color' => 'info'],
             CONTEXT_COURSECAT => ['label' => get_string('contextcoursecat', 'tool_whoiswho'), 'color' => 'warning'],
-            CONTEXT_COURSE => ['label' => get_string('contextcourse', 'tool_whoiswho'), 'color' => 'orange'],
+            CONTEXT_COURSE => ['label' => get_string('contextcourse', 'tool_whoiswho'), 'color' => 'primary'],
             CONTEXT_MODULE => ['label' => get_string('contextmodule', 'tool_whoiswho'), 'color' => 'success'],
             CONTEXT_BLOCK => ['label' => get_string('contextblock', 'tool_whoiswho'), 'color' => 'secondary'],
             default => ['label' => get_string('unknown'), 'color' => 'light'],
