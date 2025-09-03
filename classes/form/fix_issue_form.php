@@ -51,7 +51,8 @@ class fix_issue_form extends moodleform {
         $roles = (array) ($data['roles'] ?? []);
         $status = (string) ($data['status'] ?? 'pending');
 
-        $mform->addElement('static', 'caplabel', get_string('capability', 'role'), s($cap));
+        $capbadge = \html_writer::tag('span', s($cap), ['class' => 'badge badge-warning p-2']);
+        $mform->addElement('static', 'caplabel', get_string('capability', 'role'), $capbadge);
         $mform->addElement('static', 'ctxlabel', get_string('context', 'role'), s($contextname));
 
         $permoptions = [

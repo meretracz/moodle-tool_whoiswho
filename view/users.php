@@ -62,6 +62,7 @@ if ($userid > 0) {
 // Create output object.
 $page = new \tool_whoiswho\output\users_overview($filters, $PAGE->url, $download);
 
+// Render the page before any output. Allow for redirects/form submissions easier.
 $rendered = $OUTPUT->render($page);
 
 // Handle download or display page.

@@ -1,0 +1,65 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_whoiswho/fix_issue
+
+    Template for fix issue page.
+
+    Context variables required for this template:
+    * recheckurl - URL for recheck action
+    * sesskey - Session key
+    * capoverviewurl - URL for capability overview
+    * checkpermissionsurl - URL for check permissions
+    * rolelinks - Array of role edit links with url and name
+    * hasrolelinks - Whether there are role links
+    * form - HTML for the form
+
+    Example context (json):
+    {
+        "recheckurl": "/admin/tool/whoiswho/view/recheck_user.php",
+        "sesskey": "abc123",
+        "capoverviewurl": "/admin/roles/capability.php",
+        "checkpermissionsurl": "/admin/roles/check.php",
+        "rolelinks": [
+            {"url": "/admin/roles/define.php", "name": "Student"}
+        ],
+        "hasrolelinks": true,
+        "form": "<form>...</form>"
+    }
+}}
+
+<form action="{{{recheckurl}}}" method="post" class="d-inline">
+    <input type="hidden" name="sesskey" value="{{sesskey}}">
+    <button type="submit" class="btn btn-primary">{{#str}}action:recheck, tool_whoiswho{{/str}}</button>
+</form>
+
+<div class="whoiswho-quicklinks mb-3 mt-3">
+    <strong>{{#str}}quicklinks, tool_whoiswho{{/str}}: </strong>
+    <a href="{{{capoverviewurl}}}" class="btn btn-sm btn-outline-info me-2">{{#str}}action:capoverview, tool_whoiswho{{/str}}</a>
+    <a href="{{{checkpermissionsurl}}}" class="btn btn-sm btn-outline-info">{{#str}}action:checkpermissions, tool_whoiswho{{/str}}</a>
+    
+    {{#hasrolelinks}}
+    <div class="mt-2">
+        <strong>{{#str}}quicklinks:roles, tool_whoiswho{{/str}}: </strong>
+        {{#rolelinks}}
+        <a href="{{{url}}}" class="btn btn-sm btn-outline-secondary">{{name}}</a>
+        {{/rolelinks}}
+    </div>
+    {{/hasrolelinks}}
+</div>
+
+{{{form}}}
