@@ -79,41 +79,6 @@ class scan_manager_test extends advanced_testcase {
     }
 
     /**
-     * Tests whether an overlap is correctly detected in a course context.
-     *
-     * The method verifies if overlapping role assignments for a specific capability
-     * are properly identified within a course context. It ensures that the overlap
-     * is correctly categorized without any conflicting roles being detected.
-     *
-     * @covers ::find_capability_issues_for_user
-     * @return void
-     */
-    public function test_detects_overlap_in_course_context(): void {
-        $this->markTestSkipped('Overlap detection disabled: only conflicts are scanned and stored.');
-        // Original overlap test left for reference if re-enabled in future.
-        $gen = $this->getDataGenerator();
-        $user = $gen->create_user();
-        $course = $gen->create_course();
-        $coursectx = context_course::instance($course->id);
-
-        $cap = 'moodle/course:view';
-        $role1 = $this->create_role_with_cap('r1_overlap_allow', $cap, CAP_ALLOW);
-        $role2 = $this->create_role_with_cap('r2_overlap_allow', $cap, CAP_ALLOW);
-
-        role_assign($role1, $user->id, $coursectx->id);
-        role_assign($role2, $user->id, $coursectx->id);
-
-        $issues = scan_manager::find_capability_issues_for_user($user->id, $coursectx, false);
-        $this->assertArrayHasKey($coursectx->id, $issues['contexts']);
-        $ctxpayload = $issues['contexts'][$coursectx->id];
-
-        $this->assertArrayHasKey($cap, $ctxpayload['overlaps']);
-        $this->assertIsArray($ctxpayload['overlaps'][$cap]);
-        $this->assertCount(2, $ctxpayload['overlaps'][$cap], 'Expected two roles causing an overlap');
-        $this->assertEmpty($ctxpayload['conflicts'], 'No conflicts expected for pure overlap');
-    }
-
-    /**
      * Tests whether a conflict is correctly detected in a module context.
      *
      * The method checks if capability conflicts exist for a user within a specific
