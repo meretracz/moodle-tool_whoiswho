@@ -32,14 +32,20 @@ $string['whoiswho:dashboardaccess'] = 'Dasboard access';
 $string['whoiswho:receiveconflictnotification'] = 'Receive conflict notifications';
 
 // Setting headings.
-// (see above Setting headings)
+$string['settings:heading:reports'] = 'Report configuration';
+$string['settings:heading:reports_desc'] = 'Configure options here that will be reflected in the reports.';
 
 // Settings.
 $string['settings:whoiswhoconfig'] = 'Configuration';
 $string['settings:profilefields'] = 'Profile fields';
 $string['settings:profilefields_desc'] = 'Select the profile fields you want to display on the dashboard.';
-$string['settings:heading:reports'] = 'Report configuration';
-$string['settings:heading:reports_desc'] = 'Configure options here that will be reflected in the reports.';
+
+// Contexts.
+$string['contextsystem'] = 'System context';
+$string['contextcoursecat'] = 'Course category context';
+$string['contextcourse'] = 'Course context';
+$string['contextmodule'] = 'Module context';
+$string['contextuser'] = 'User context';
 
 // Scanner settings.
 $string['settings:heading:scanner'] = 'Scanner options';
@@ -59,6 +65,7 @@ $string['settings:context:course'] = 'Course context';
 $string['externalpage:dashboard'] = 'Dashboard';
 $string['externalpage:runoverlap'] = 'Run overlap scan now';
 $string['externalpage:issues'] = 'Issues';
+
 // New page.
 $string['title:issues'] = 'Issues overview';
 $string['heading:issues'] = 'Issues overview';
