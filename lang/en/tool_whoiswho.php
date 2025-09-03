@@ -152,6 +152,7 @@ $string['user_override_found'] = 'User capability override detected';
 $string['title:fix_issue'] = 'Fix issue permissions';
 $string['heading:fix_issue'] = 'Fix issue permissions';
 $string['notice:issue_permissions_updated'] = 'Permissions updated and issues rechecked.';
+$string['form:current'] = 'Current';
 $string['form:effective'] = 'Effective in context';
 $string['status:pending'] = 'Pending';
 $string['status:resolved'] = 'Resolved';

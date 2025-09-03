@@ -99,8 +99,11 @@ class issues_overview implements renderable, templatable {
             'dashboardurl' => (new moodle_url('/admin/tool/whoiswho/view/dashboard.php'))->out(false),
             'filterform' => $filterformhtml,
             'table' => $tablehtml,
-            'hasfilters' => !empty($this->filters['fullname']) || !empty($this->filters['contextlevel'])
-                || !empty($this->filters['userid']) || ($this->filters['status'] ?? '') !== '',
+            'hasfilters' => !empty($this->filters['fullname'])
+                || !empty($this->filters['contextlevel'])
+                || !empty($this->filters['userid'])
+                || (!empty($this->filters['userids']) && is_array($this->filters['userids']))
+                || ($this->filters['status'] ?? '') !== '',
         ];
     }
 

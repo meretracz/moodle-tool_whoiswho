@@ -44,8 +44,21 @@ The GNU GENERAL PUBLIC LICENSE. Please see [License File](LICENSE.md) for more i
 
 ## Contributing
 
-Contributions are welcome and will be fully credited. We accept contributions via Pull Requests on Github.
-We only offer paid support, more information can ben required through [sales@ltnc.nl](mailto:sales@ltnc.nl)
+We welcome community contributions via GitHub Pull Requests.
+
+- Propose first: For larger changes, open an issue to discuss scope and approach before you start.
+- Fork and branch: Fork the repo, create a feature branch from `main` (e.g., `feat/...`, `fix/...`).
+- Coding standards: Follow Moodle’s coding guidelines and PHP 8.1 compatibility.
+  - Lint/style: `phpcs --standard=moodle .`
+  - Tests: add/update PHPUnit tests in `tests/` when changing logic.
+  - Do not bump `version.php`; maintainers handle release versioning.
+- PR quality: Keep PRs focused and small, include a clear description, link related issues, and add screenshots for UI changes.
+- Docs and strings: Update `README.md`, `docs/`, and language strings when behavior or UI changes.
+- CI: Pull requests run CI. Please ensure local checks pass before submitting.
+- License: By contributing, you agree your code is GPL v3 compatible, consistent with this project’s license.
+- Community: Be respectful and constructive in discussions and reviews.
+
+Need commercial help or priority support? Contact [sales@ltnc.nl](mailto:sales@ltnc.nl).
 
 ## Changelog
 

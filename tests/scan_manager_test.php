@@ -243,11 +243,16 @@ class scan_manager_test extends advanced_testcase {
 
         $cap = 'mod/assign:grade'; // Common teacher-only capability; students are typically prevented.
 
-        // Create roles with explicit settings at system so they appear along the path.
-        $roleprevent = $this->create_role_with_cap('r_parent_prevent', $cap, CAP_PREVENT);
-        $roleallow = $this->create_role_with_cap('r_child_allow', $cap, CAP_ALLOW);
+        // Create roles without system-level capabilities.
+        $sysctx = context_system::instance();
+        $roleprevent = create_role('r_parent_prevent', 'r_parent_prevent', 'r_parent_prevent description');
+        $roleallow = create_role('r_child_allow', 'r_child_allow', 'r_child_allow description');
 
-        // Assign PREVENT role at course (parent) and ALLOW role at module (child).
+        // Set PREVENT at course level and ALLOW at module level to demonstrate override.
+        assign_capability($cap, CAP_PREVENT, $roleprevent, $coursectx->id, true);
+        assign_capability($cap, CAP_ALLOW, $roleallow, $modctx->id, true);
+
+        // Assign roles to user.
         role_assign($roleprevent, $user->id, $coursectx->id);
         role_assign($roleallow, $user->id, $modctx->id);
 

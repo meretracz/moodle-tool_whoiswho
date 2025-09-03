@@ -139,7 +139,6 @@ class issues_table extends table_sql {
      *               associative array of query parameters.
      */
     protected function build_filters_where(): array {
-        global $DB;
         $where = [];
         $params = [];
 
@@ -165,11 +164,20 @@ class issues_table extends table_sql {
             $params['fstatus'] = $status;
         }
 
-        // User ID filter.
+        // Single user ID filter.
         $userid = (int) ($this->filters['userid'] ?? 0);
         if ($userid > 0) {
             $where[] = 'u.id = :userid';
             $params['userid'] = $userid;
+        }
+
+        // Multiple user IDs filter.
+        $userids = $this->filters['userids'] ?? [];
+        if (!empty($userids) && is_array($userids)) {
+            global $DB;
+            [$insql, $inparams] = $DB->get_in_or_equal(array_map('intval', $userids), SQL_PARAMS_NAMED, 'uid');
+            $where[] = "u.id $insql";
+            $params = array_merge($params, $inparams);
         }
 
         return [implode(' AND ', $where), $params];

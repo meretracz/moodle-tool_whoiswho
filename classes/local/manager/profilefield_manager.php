@@ -89,7 +89,8 @@ class profilefield_manager {
                 'usercount' => $value->usercount,
                 'roles' => implode(', ', $roles),
                 'issuecount' => $issuecount,
-                'viewurl' => '#', // Will be replaced with actual URL later.
+                // Provide user IDs so the action can link to the issues table filtered on these users.
+                'userids' => array_map('intval', $userids),
             ];
         }
 

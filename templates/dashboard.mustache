@@ -19,8 +19,29 @@
     @copyright 02/09/2025 Mfreak.nl | LdesignMedia.nl - Luuk Verhoeven
     @author    Luuk Verhoeven
     
-    @template block/table
-    Comment text
+    @template tool_whoiswho/dashboard
+    Dashboard template showing overview cards with statistics
+    
+    Context variables required for this template:
+    * items - Array of dashboard items with statistics
+    
+    Example context (json):
+    {
+        "items": [
+            {
+                "cardheader": "Total Issues",
+                "cardvalue": "42",
+                "cardicon": "fa-exclamation-triangle",
+                "overviewurl": "/admin/tool/whoiswho/view/issues.php"
+            },
+            {
+                "cardheader": "Users with Issues",
+                "cardvalue": "15",
+                "cardicon": "fa-users",
+                "overviewurl": "/admin/tool/whoiswho/view/users.php"
+            }
+        ]
+    }
 }}
 
 <div class="row">

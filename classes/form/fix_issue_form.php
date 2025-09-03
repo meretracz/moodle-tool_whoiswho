@@ -68,17 +68,57 @@ class fix_issue_form extends moodleform {
             $current = (int) ($info['current'] ?? 0);
             $effective = $info['effective'] ?? null;
 
-            $mform->addElement('select', "perm[$rid]", $label, $permoptions);
+            // Build enhanced label showing current setting.
+            $currenttext = $permoptions[$current];
+            $enhancedlabel = $label;
+            
+            // Add visual indicator for current setting.
+            if ($current !== CAP_INHERIT) {
+                $badge = match($current) {
+                    CAP_ALLOW => 'success',
+                    CAP_PREVENT => 'warning', 
+                    CAP_PROHIBIT => 'danger',
+                    default => 'secondary'
+                };
+                $enhancedlabel .= ' ' . \html_writer::tag(
+                    'span',
+                    get_string('form:current', 'tool_whoiswho') . ': ' . $currenttext,
+                    ['class' => "badge badge-$badge ml-2"]
+                );
+            } else {
+                $enhancedlabel .= ' ' . \html_writer::tag(
+                    'span',
+                    get_string('form:current', 'tool_whoiswho') . ': ' . $currenttext,
+                    ['class' => 'text-muted ml-2']
+                );
+            }
+
+            $mform->addElement('select', "perm[$rid]", $enhancedlabel, $permoptions);
             $mform->setDefault("perm[$rid]", $current);
             $mform->setType("perm[$rid]", PARAM_INT);
 
-            // Optional: display effective value for extra context.
-            if ($effective !== null && isset($permoptions[(int) $effective])) {
+            // Show effective value if different from current.
+            if ($effective !== null && $effective !== $current && isset($permoptions[(int) $effective])) {
+                $effbadge = match((int) $effective) {
+                    CAP_ALLOW => 'info',
+                    CAP_PREVENT => 'secondary',
+                    CAP_PROHIBIT => 'danger',
+                    default => 'light'
+                };
                 $mform->addElement(
                     'static',
                     "eff_$rid",
-                    get_string('form:effective', 'tool_whoiswho'),
-                    $permoptions[(int) $effective]
+                    '',
+                    \html_writer::tag(
+                        'div',
+                        \html_writer::tag('small', get_string('form:effective', 'tool_whoiswho') . ': ') .
+                        \html_writer::tag(
+                            'span',
+                            $permoptions[(int) $effective],
+                            ['class' => "badge badge-$effbadge"]
+                        ),
+                        ['class' => 'text-muted ml-4']
+                    )
                 );
             }
         }
