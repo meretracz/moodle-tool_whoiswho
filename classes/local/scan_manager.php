@@ -109,14 +109,20 @@ class scan_manager {
                 $issues = self::find_capability_issues_for_user($user, $cx, $includeparents);
 
                 if (!isset($issues['contexts'][$cx->id])) {
+                    // No issues found - clean up any existing resolved findings for this user/context.
+                    self::cleanup_resolved_findings($user, $cx->id);
                     continue;
                 }
 
                 $cxpayload = $issues['contexts'][$cx->id];
 
+                // Track which issues are still active.
+                $activeissues = [];
+
                 // Conflicts first (higher severity).
                 if ($conflictenabled) {
                     foreach ($cxpayload['conflicts'] as $cap => $sets) {
+                        $activeissues[] = self::fingerprint($user, $cx->id, $cap, $sets);
                         [$created] = self::upsert_finding(
                             $scanid,
                             $user,
@@ -133,6 +139,7 @@ class scan_manager {
                 if ($overlapenabled) {
                     foreach ($cxpayload['overlaps'] as $cap => $roleids) {
                         $sets = ['allow' => array_values($roleids), 'prevent' => [], 'prohibit' => []];
+                        $activeissues[] = self::fingerprint($user, $cx->id, $cap, $sets);
                         [$created] = self::upsert_finding(
                             $scanid,
                             $user,
@@ -145,6 +152,9 @@ class scan_manager {
                         $created ? $newfind++ : $updfind++;
                     }
                 }
+
+                // Clean up resolved findings that no longer have issues.
+                self::cleanup_resolved_findings($user, $cx->id, $activeissues);
             }
             $rs->close();
 
@@ -330,7 +340,9 @@ class scan_manager {
         ];
 
         foreach ($contexts as $cx) {
-            $assigns = get_user_roles($cx, $userid, false);
+            // Include roles inherited from parent contexts so module-level checks
+            // see course/category/system assignments too.
+            $assigns = get_user_roles($cx, $userid, true);
             if (empty($assigns)) {
                 $result['contexts'][$cx->id] = [
                     'contextid' => $cx->id,
@@ -350,15 +362,17 @@ class scan_manager {
                 $roleid = (int) $a->roleid;
                 $roles[$roleid] = $roles[$roleid] ?? self::role_name($roleid);
 
-                if (function_exists('role_context_capabilities')) {
-                    $caps = role_context_capabilities($roleid, $cx);
-                    if (!is_array($caps)) {
-                        $caps = [];
-                    }
-                } else {
-                    $caps = [];
-                    $records = $DB->get_records('role_capabilities', ['roleid' => $roleid]);
-                    foreach ($records as $rc) {
+                // Only check capabilities at this specific context level.
+                // Conflicts should be detected based on direct overrides at this context,
+                // not effective permissions that include inheritance.
+                $caps = [];
+                $records = $DB->get_records('role_capabilities', [
+                    'roleid' => $roleid,
+                    'contextid' => $cx->id
+                ]);
+                foreach ($records as $rc) {
+                    // Only include non-inherit permissions.
+                    if ((int) $rc->permission !== CAP_INHERIT) {
                         $caps[$rc->capability] = (int) $rc->permission;
                     }
                 }
@@ -611,12 +625,18 @@ class scan_manager {
                 $cx = \context::instance_by_id((int) $p['contextid'], MUST_EXIST);
                 $issues = self::find_capability_issues_for_user($userid, $cx, $includeparents);
                 if (empty($issues['contexts'][$cx->id])) {
+                    // No issues found - clean up any existing resolved findings for this user/context.
+                    self::cleanup_resolved_findings($userid, $cx->id);
                     continue;
                 }
                 $cxpayload = $issues['contexts'][$cx->id];
 
+                // Track which issues are still active.
+                $activeissues = [];
+
                 if ($conflictenabled) {
                     foreach ($cxpayload['conflicts'] as $cap => $sets) {
+                        $activeissues[] = self::fingerprint($userid, $cx->id, $cap, $sets);
                         [$created] = self::upsert_finding(
                             $scanid,
                             $userid,
@@ -633,6 +653,7 @@ class scan_manager {
                 if ($overlapenabled) {
                     foreach ($cxpayload['overlaps'] as $cap => $roleids) {
                         $sets = ['allow' => array_values($roleids), 'prevent' => [], 'prohibit' => []];
+                        $activeissues[] = self::fingerprint($userid, $cx->id, $cap, $sets);
                         [$created] = self::upsert_finding(
                             $scanid,
                             $userid,
@@ -645,6 +666,9 @@ class scan_manager {
                         $created ? $new++ : $upd++;
                     }
                 }
+
+                // Clean up resolved findings that no longer have issues.
+                self::cleanup_resolved_findings($userid, $cx->id, $activeissues);
             }
 
             $DB->update_record(
@@ -698,21 +722,68 @@ class scan_manager {
                 $where .= " AND ctx.path LIKE :cxpath";
                 $params['cxpath'] = $rootctx->path . '%';
             }
-            if (!empty($levels)) {
-                [$lvlsql, $lvlparams] = $DB->get_in_or_equal($levels, SQL_PARAMS_NAMED, 'lvl');
-                $where .= " AND ctx.contextlevel $lvlsql";
-                $params = array_merge($params, $lvlparams);
-            }
-            $sql = "SELECT DISTINCT ra.userid, ra.contextid
-                      FROM {role_assignments} ra
-                      JOIN {context} ctx ON ctx.id = ra.contextid
-                     WHERE $where";
-            $records = $DB->get_records_sql($sql, $params);
-            $pairs = array_map(function ($r) {
-                return ['userid' => (int) $r->userid, 'contextid' => (int) $r->contextid];
-            }, $records);
-            $meta = ['scope' => 'users' . ($rootctx ? '+ctx' : ''), 'users' => count($userids)];
 
+            // Fetch base role assignment contexts without restricting by level,
+            // so we can expand to descendant module contexts if requested.
+            $records = $DB->get_records_sql(
+                "SELECT DISTINCT ra.userid, ra.contextid, ctx.contextlevel AS ctxlevel, ctx.path AS ctxpath
+                   FROM {role_assignments} ra
+                   JOIN {context} ctx ON ctx.id = ra.contextid
+                  WHERE $where",
+                $params
+            );
+
+            $needmodules = in_array(CONTEXT_MODULE, $levels ?? [], true);
+            $uniq = [];
+            $pairs = [];
+            $childcache = [];
+
+            foreach ($records as $r) {
+                $uid = (int) $r->userid;
+                $cxid = (int) $r->contextid;
+                $cxlevel = (int) $r->ctxlevel;
+
+                // Include the base context if no level filter or level is requested.
+                if (empty($levels) || in_array($cxlevel, $levels, true)) {
+                    $key = $uid . '-' . $cxid;
+                    if (!isset($uniq[$key])) {
+                        $uniq[$key] = true;
+                        $pairs[] = ['userid' => $uid, 'contextid' => $cxid];
+                    }
+                }
+
+                // Expand to descendant module contexts when requested.
+                if ($needmodules) {
+                    $ppath = (string) $r->ctxpath;
+                    if (!isset($childcache[$ppath])) {
+                        $childcache[$ppath] = $DB->get_fieldset_sql(
+                            "SELECT id FROM {context} WHERE path LIKE :pp AND contextlevel = :lvl",
+                            ['pp' => $ppath . '%', 'lvl' => CONTEXT_MODULE]
+                        );
+                    }
+                    foreach ($childcache[$ppath] as $childid) {
+                        $key = $uid . '-' . (int) $childid;
+                        if (!isset($uniq[$key])) {
+                            $uniq[$key] = true;
+                            $pairs[] = ['userid' => $uid, 'contextid' => (int) $childid];
+                        }
+                    }
+                }
+            }
+
+            // Always include the explicit root context itself when provided,
+            // so module-level checks run even if role assignments are only in parents.
+            if ($rootctx) {
+                foreach ($userids as $uid) {
+                    $key = ((int) $uid) . '-' . $rootctx->id;
+                    if (!isset($uniq[$key])) {
+                        $uniq[$key] = true;
+                        $pairs[] = ['userid' => (int) $uid, 'contextid' => (int) $rootctx->id];
+                    }
+                }
+            }
+
+            $meta = ['scope' => 'users' . ($rootctx ? '+ctx' : ''), 'users' => count($userids)];
             return [$pairs, $meta];
         }
 
@@ -760,6 +831,37 @@ class scan_manager {
         $meta = ['scope' => 'all'];
 
         return [$pairs, $meta];
+    }
+
+    /**
+     * Clean up resolved findings that no longer have active issues.
+     *
+     * @param int $userid The user ID.
+     * @param int $contextid The context ID.
+     * @param array $activeissues Array of fingerprints for issues that are still active.
+     * @return void
+     */
+    private static function cleanup_resolved_findings(int $userid, int $contextid, array $activeissues = []): void {
+        global $DB;
+
+        // Get all existing findings for this user/context that are marked as resolved.
+        $sql = "SELECT id, fingerprint, issuestate
+                  FROM {tool_whoiswho_finding}
+                 WHERE userid = :userid
+                   AND contextid = :contextid
+                   AND issuestate IN ('resolved', 'pending')";
+
+        $findings = $DB->get_records_sql($sql, ['userid' => $userid, 'contextid' => $contextid]);
+
+        foreach ($findings as $finding) {
+            // If this finding's fingerprint is not in the list of active issues,
+            // it means the issue has been fixed and the finding should be removed.
+            if (!in_array($finding->fingerprint, $activeissues)) {
+                // Delete the finding and its related capability records.
+                $DB->delete_records('tool_whoiswho_finding_cap', ['findingid' => $finding->id]);
+                $DB->delete_records('tool_whoiswho_finding', ['id' => $finding->id]);
+            }
+        }
     }
 
 }

@@ -18,6 +18,7 @@
  * Adhoc task to (re)scan capability issues for a single user.
  *
  * @package     tool_whoiswho
+ * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

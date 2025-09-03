@@ -179,11 +179,6 @@ class issues_table extends table_sql {
         $where = [];
         $params = [];
 
-        // Always hide pure overlaps (same capability allowed by multiple roles).
-        // Requested behavior: "Dont show any capabilities that overlap and has the same value".
-        $where[] = 'f.type <> :excludeoverlap';
-        $params['excludeoverlap'] = 'cap_overlap';
-
         // Fullname filter: match firstname or lastname.
         $fullname = trim((string) ($this->filters['fullname'] ?? ''));
         if ($fullname !== '') {
@@ -234,8 +229,12 @@ class issues_table extends table_sql {
         } else if ($type === 'cap_conflict') {
             $label = get_string('issue:conflict', 'tool_whoiswho');
         }
+        $capurl = new moodle_url('/admin/roles/capability.php', [
+            'capability' => $cap,
+            'contextid' => (int) $row->contextid,
+        ]);
 
-        return s($label . ' - ' . $cap);
+        return html_writer::link($capurl, s($label . ' - ' . $cap));
     }
 
     /**
@@ -334,11 +333,13 @@ class issues_table extends table_sql {
             }
             $role = $rcache[$rid];
             if ($role) {
-                $names[] = role_get_name($role, $ctx, ROLENAME_ALIAS);
+                $rname = role_get_name($role, $ctx, ROLENAME_ALIAS);
+                $editurl = new moodle_url('/admin/roles/define.php', ['action' => 'edit', 'roleid' => (int) $role->id]);
+                $names[] = html_writer::link($editurl, s($rname));
             }
         }
 
-        return s(implode(', ', $names));
+        return implode(', ', $names);
     }
 
     /**
@@ -405,6 +406,14 @@ class issues_table extends table_sql {
             'returnurl' => (new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters))->out_as_local_url(false),
         ]);
         $roleurl = new moodle_url('/admin/roles/assign.php', ['contextid' => $ctxid]);
+        $capurl = new moodle_url('/admin/roles/capability.php', [
+            'capability' => (string) $row->capability,
+            'contextid' => $ctxid,
+        ]);
+        $checkurl = new moodle_url('/admin/roles/check.php', [
+            'contextid' => $ctxid,
+            'userid' => (int) $row->userid,
+        ]);
         $returnurl = new moodle_url('/admin/tool/whoiswho/view/issues.php', $this->filters);
         $recheckurl = new moodle_url('/admin/tool/whoiswho/view/recheck_user.php', [
             'userid' => (int) $row->userid,
@@ -415,6 +424,8 @@ class issues_table extends table_sql {
         $out = [];
         $out[] = html_writer::link($fixurl, '[' . get_string('action:changepermission', 'tool_whoiswho') . ']');
         $out[] = html_writer::link($roleurl, '[' . get_string('action:changerole', 'tool_whoiswho') . ']');
+        $out[] = html_writer::link($capurl, '[' . get_string('action:capoverview', 'tool_whoiswho') . ']');
+        $out[] = html_writer::link($checkurl, '[' . get_string('action:checkpermissions', 'tool_whoiswho') . ']');
         $button = new \single_button($recheckurl, get_string('action:recheck', 'tool_whoiswho'), 'post');
         // Add a unique form id.
         $button->formid = 'whoiswho-recheck-' . (int) $row->userid;

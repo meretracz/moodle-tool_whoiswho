@@ -42,6 +42,8 @@ class capability_issue_scanner extends base_scanner {
     protected ?int $scanid = null;
 
     /**
+     * Get the scanner name.
+     *
      * @return string
      */
     public function get_name(): string {

@@ -20,10 +20,15 @@
  * @package     tool_whoiswho
  * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @author      Luuk Verhoeven
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-defined('MOODLE_INTERNAL') || die();
+namespace tool_whoiswho;
 
+use advanced_testcase;
+use context_course;
+use context_module;
+use context_system;
 use tool_whoiswho\local\scan_manager;
 
 /**
@@ -35,7 +40,7 @@ use tool_whoiswho\local\scan_manager;
  * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @author      Luuk Verhoeven
  **/
-class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
+class scan_manager_test extends advanced_testcase {
 
     /**
      * Sets up the testing environment before each test is run.
@@ -80,6 +85,7 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
      * are properly identified within a course context. It ensures that the overlap
      * is correctly categorized without any conflicting roles being detected.
      *
+     * @covers ::find_capability_issues_for_user
      * @return void
      */
     public function test_detects_overlap_in_course_context(): void {
@@ -112,6 +118,7 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
      * module context when conflicting role assignments are made. It ensures that
      * the detected conflicts for the given capability are categorized appropriately.
      *
+     * @covers ::find_capability_issues_for_user
      * @return void
      */
     public function test_detects_conflict_in_module_context(): void {
@@ -147,6 +154,7 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
      * Tests that enabling the inclusion of parent contexts correctly adds parent contexts,
      * ensuring the presence of capabilities inherited from those contexts.
      *
+     * @covers ::find_capability_issues_for_user
      * @return void
      */
     public function test_include_parents_adds_parent_contexts(): void {
@@ -184,6 +192,7 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
      * duplicate entries are present in the input data. It ensures consistency in
      * fingerprint computation for the given user, context, capability, and role sets.
      *
+     * @covers ::fingerprint
      * @return void
      */
     public function test_fingerprint_is_order_insensitive(): void {
@@ -197,9 +206,9 @@ class tool_whoiswho_scan_manager_testcase extends advanced_testcase {
             'prohibit' => [11, 11],
         ];
         $sets2 = [
-            'allow' => [7, 5, 2], // different order
+            'allow' => [7, 5, 2], // Different order.
             'prevent' => [3],
-            'prohibit' => [11], // duplicates removed
+            'prohibit' => [11], // Duplicates removed.
         ];
 
         $f1 = scan_manager::fingerprint($uid, $ctxid, $cap, $sets1);
