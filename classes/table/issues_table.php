@@ -298,6 +298,7 @@ class issues_table extends table_sql {
      */
     public function col_status(object $row): string {
         $status = (string) ($row->issuestate ?? 'pending');
+
         return match ($status) {
             'resolved' => get_string('status:resolved', 'tool_whoiswho'),
             'ignored' => get_string('status:ignored', 'tool_whoiswho'),
@@ -381,12 +382,11 @@ class issues_table extends table_sql {
             }
         }
 
-        $token = '[' . $name . ']';
         if ($url) {
-            return html_writer::link($url, $token);
+            return html_writer::link($url, $name, ['class' => 'btn btn-sm btn-outline-info']);
         }
 
-        return s($token);
+        return html_writer::tag('span', $name, ['class' => 'text-muted']);
     }
 
     /**
@@ -413,13 +413,12 @@ class issues_table extends table_sql {
         ]);
 
         $out = [];
-        $out[] = html_writer::link($fixurl, '[' . get_string('action:changepermission', 'tool_whoiswho') . ']');
-        $out[] = html_writer::link($roleurl, '[' . get_string('action:changerole', 'tool_whoiswho') . ']');
-        $button = new \single_button($recheckurl, get_string('action:recheck', 'tool_whoiswho'), 'post');
-        // Add a unique form id.
-        $button->formid = 'whoiswho-recheck-' . (int) $row->userid;
-        // Render button form.
-        $out[] = $OUTPUT->render($button);
+        $out[] = html_writer::link($fixurl, get_string('action:changepermission', 'tool_whoiswho'),
+            ['class' => 'btn btn-sm btn-outline-primary mb-1']);
+        $out[] = html_writer::link($roleurl, get_string('action:changerole', 'tool_whoiswho'),
+            ['class' => 'btn btn-sm btn-outline-secondary mb-1']);
+        $out[] = html_writer::link($recheckurl, get_string('action:recheck', 'tool_whoiswho'),
+            ['class' => 'btn btn-sm btn-outline-info mb-1']);
 
         return implode(' ', $out);
     }
