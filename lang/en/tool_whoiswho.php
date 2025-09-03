@@ -24,6 +24,9 @@
  * @author      Vincent Cornelis
  **/
 
+// phpcs:disable moodle.Files.**Lang**FilesOrdering.UnexpectedComment
+// phpcs:disable moodle.Files.LangFilesOrdering.IncorrectOrder
+
 // Default.
 $string['pluginname'] = 'Who is who';
 
@@ -135,6 +138,10 @@ $string['issue:conflict'] = 'Issue: conflict';
 $string['action:changepermission'] = 'change permission';
 $string['action:changerole'] = 'change role';
 $string['action:recheck'] = 'recheck issues';
+$string['action:capoverview'] = 'capability overview';
+$string['action:checkpermissions'] = 'check permissions';
+$string['quicklinks'] = 'Quick links';
+$string['quicklinks:roles'] = 'Edit roles';
 
 // Scanner messages (capability_scanner).
 $string['guest_dangerous_caps'] = 'Guest role has dangerous capabilities assigned';

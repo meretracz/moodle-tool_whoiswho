@@ -18,6 +18,7 @@
  * Form to adjust capability permissions for roles involved in a finding.
  *
  * @package     tool_whoiswho
+ * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

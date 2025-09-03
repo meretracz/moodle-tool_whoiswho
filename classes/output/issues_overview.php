@@ -42,13 +42,13 @@ class issues_overview implements renderable, templatable {
 
     /** @var array Filter values */
     protected array $filters = [];
-    
+
     /** @var moodle_url Page URL */
     protected moodle_url $pageurl;
-    
+
     /** @var issues_filter_form Filter form */
     protected issues_filter_form $filterform;
-    
+
     /** @var issues_table Table instance */
     protected issues_table $table;
 
@@ -61,7 +61,7 @@ class issues_overview implements renderable, templatable {
     public function __construct(array $filters, moodle_url $pageurl) {
         $this->filters = $filters;
         $this->pageurl = $pageurl;
-        
+
         // Initialize filter form.
         $this->filterform = new issues_filter_form($pageurl->out(false));
         $this->filterform->set_data([
@@ -69,7 +69,7 @@ class issues_overview implements renderable, templatable {
             'contextlevel' => $filters['contextlevel'] ?? 0,
             'status' => $filters['status'] ?? '',
         ]);
-        
+
         // Initialize table.
         $this->table = new issues_table('tool_whoiswho_issues', $filters);
         $this->table->define_baseurl($pageurl);
@@ -84,22 +84,23 @@ class issues_overview implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output): array {
         global $OUTPUT;
-        
+
         // Capture filter form.
         ob_start();
         $this->filterform->display();
         $filterformhtml = ob_get_clean();
-        
+
         // Capture table output.
         ob_start();
         $this->table->out(25, true);
         $tablehtml = ob_get_clean();
-        
+
         return [
             'dashboardurl' => (new moodle_url('/admin/tool/whoiswho/view/dashboard.php'))->out(false),
             'filterform' => $filterformhtml,
             'table' => $tablehtml,
-            'hasfilters' => !empty($this->filters['fullname']) || !empty($this->filters['contextlevel']) || !empty($this->filters['userid']) || ($this->filters['status'] ?? '') !== '',
+            'hasfilters' => !empty($this->filters['fullname']) || !empty($this->filters['contextlevel'])
+                || !empty($this->filters['userid']) || ($this->filters['status'] ?? '') !== '',
         ];
     }
 }

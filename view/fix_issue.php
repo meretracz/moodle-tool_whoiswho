@@ -153,6 +153,32 @@ $recheckurl = new moodle_url('/admin/tool/whoiswho/view/recheck_user.php', [
 ]);
 $recheckbtn = new single_button($recheckurl, get_string('action:recheck', 'tool_whoiswho'), 'post');
 echo $OUTPUT->render($recheckbtn);
+
+// Quick navigation links: capability overview, check permissions, role edit links.
+$capurl = new moodle_url('/admin/roles/capability.php', [
+    'capability' => (string) $finding->capability,
+    'contextid' => (int) $finding->contextid,
+]);
+$checkurl = new moodle_url('/admin/roles/check.php', [
+    'contextid' => (int) $finding->contextid,
+    'userid' => (int) $finding->userid,
+]);
+
+echo html_writer::start_div('whoiswho-quicklinks');
+echo html_writer::tag('strong', get_string('quicklinks', 'tool_whoiswho') . ': ');
+echo html_writer::link($capurl, '[' . get_string('action:capoverview', 'tool_whoiswho') . ']') . ' ';
+echo html_writer::link($checkurl, '[' . get_string('action:checkpermissions', 'tool_whoiswho') . ']');
+
+// Per-role edit links.
+$rolelinks = [];
+foreach ($rolesdata as $rid => $info) {
+    $editurl = new moodle_url('/admin/roles/define.php', ['action' => 'edit', 'roleid' => (int) $rid]);
+    $rolelinks[] = html_writer::link($editurl, '[' . s($info['name']) . ']');
+}
+if (!empty($rolelinks)) {
+    echo html_writer::span(' ' . get_string('quicklinks:roles', 'tool_whoiswho') . ': ' . implode(' ', $rolelinks));
+}
+echo html_writer::end_div();
 $mform->set_data(['id' => $id]);
 $mform->display();
 echo $OUTPUT->footer();
