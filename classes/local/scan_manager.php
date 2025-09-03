@@ -518,7 +518,7 @@ class scan_manager {
             'finishedat' => null,
             'status' => 'running',
             'initiatedby' => $initiatedby,
-            'scopecontextid' => $rootcontext ? $rootcontext->id : null,
+            'scopecontextid' => $rootcontext?->id,
             'meta' => json_encode(['mode' => 'adhoc-overlap']),
         ];
         $scanid = $DB->insert_record('tool_whoiswho_scan', $scan);
@@ -609,7 +609,7 @@ class scan_manager {
             'finishedat' => null,
             'status' => 'running',
             'initiatedby' => $initiatedby,
-            'scopecontextid' => $rootcontext ? $rootcontext->id : null,
+            'scopecontextid' => $rootcontext?->id,
             'meta' => json_encode(['mode' => 'adhoc-users', 'users' => count($userids)]),
         ];
         $scanid = $DB->insert_record('tool_whoiswho_scan', $scan);

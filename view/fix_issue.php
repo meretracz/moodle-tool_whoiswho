@@ -17,12 +17,13 @@
 /**
  * Fix an issue for a single user, then redirect back to the issues page.
  *
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @package     tool_whoiswho
- * @copyright   02/09/2025 LdesignMedia.nl - Luuk Verhoeven
- * @author      Vincent Cornelis
- **/
+ * @package    tool_whoiswho
+ * @category   admin
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  02/09/2025 LdesignMedia.nl - Luuk Verhoeven
+ * @author     Vincent Cornelis
+ */
+
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
@@ -30,7 +31,7 @@ use tool_whoiswho\form\fix_issue_form;
 
 require_login();
 
-$id = required_param('id', PARAM_INT); // finding id
+$id = required_param('id', PARAM_INT); // Finding ID.
 $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
 // Load finding.
