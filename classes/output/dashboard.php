@@ -29,6 +29,7 @@ namespace tool_whoiswho\output;
 use core\output\renderable;
 use core\output\renderer_base;
 use core\output\templatable;
+use tool_whoiswho\local\manager\capability_manager;
 
 /**
  * Class dashboard
@@ -56,15 +57,14 @@ class dashboard implements renderable, templatable {
     }
 
     /**
-     * Example method
+     * Get dashboard items with actual data
      *
      * @return array
      */
     public function get_items(): array {
 
-        // Add the Cards
-        // TODO: Get actual data to send to the card.mustache template.
-        // first two fields are fixed others will be based on profile field
+        // Get actual statistics from capability manager.
+        $stats = capability_manager::get_dashboard_stats();
 
         $issuelink = new \moodle_url('/admin/tool/whoiswho/view/issues.php');
         $userslink = new \moodle_url('/admin/tool/whoiswho/view/users.php');
@@ -72,13 +72,13 @@ class dashboard implements renderable, templatable {
         $items = [
             [
                 'cardheader' => get_string('issues:dashboard', 'tool_whoiswho'),
-                'cardvalue' => '100',
+                'cardvalue' => $stats['unresolved_issues'],
                 'cardicon' => 'fa-exclamation-triangle',
                 'overviewurl' => $issuelink->out(),
             ],
             [
                 'cardheader' => get_string('users:dashboard', 'tool_whoiswho'),
-                'cardvalue' => '50',
+                'cardvalue' => $stats['affected_users'],
                 'cardicon' => 'fa-users',
                 'overviewurl' => $userslink->out(),
             ],
