@@ -95,13 +95,14 @@ if ($hassiteconfig) {
         $contextoptions = [
             CONTEXT_SYSTEM => get_string('settings:context:system', 'tool_whoiswho'),
             CONTEXT_COURSE => get_string('settings:context:course', 'tool_whoiswho'),
+            CONTEXT_MODULE => get_string('settings:context:module', 'tool_whoiswho'),
         ];
 
         $settings->add(new admin_setting_configmultiselect(
             'tool_whoiswho/scan_contextlevels',
             get_string('settings:scan_contextlevels', 'tool_whoiswho'),
             get_string('settings:scan_contextlevels_desc', 'tool_whoiswho'),
-            [CONTEXT_SYSTEM, CONTEXT_COURSE],
+            [CONTEXT_SYSTEM, CONTEXT_COURSE, CONTEXT_MODULE],
             $contextoptions
         ));
 

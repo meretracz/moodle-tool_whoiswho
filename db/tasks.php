@@ -30,7 +30,7 @@ $tasks = [
     [
         'classname' => '\tool_whoiswho\task\scan_scheduled',
         'blocking'  => 0,
-        'minute'    => 'R',
+        'minute'    => '*/5',
         'hour'      => '*',
         'day'       => '*',
         'dayofweek' => '*',

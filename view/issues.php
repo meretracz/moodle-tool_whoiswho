@@ -36,11 +36,23 @@ admin_externalpage_setup('tool_whoiswho_dashboard');
 // Params.
 $fullname = optional_param('fullname', '', PARAM_TEXT);
 $contextlevel = optional_param('contextlevel', 0, PARAM_INT);
+$userid = optional_param('userid', 0, PARAM_INT);
+
+// If userid is provided, get the user's name for pre-filling the filter.
+if ($userid > 0) {
+    global $DB;
+    $user = $DB->get_record('user', ['id' => $userid], 'firstname, lastname', IGNORE_MISSING);
+    if ($user && empty($fullname)) {
+        $fullname = $user->firstname . ' ' . $user->lastname;
+    }
+}
 
 $url = new moodle_url('/admin/tool/whoiswho/view/issues.php', [
     'fullname' => $fullname,
     'contextlevel' => $contextlevel,
+    'userid' => $userid,
 ]);
+
 $PAGE->set_url($url);
 $PAGE->set_title(get_string('title:issues', 'tool_whoiswho'));
 $PAGE->set_heading(get_string('heading:issues', 'tool_whoiswho'));
@@ -55,7 +67,13 @@ echo $OUTPUT->heading(get_string('heading:issues', 'tool_whoiswho'));
 $mform->display();
 
 // Build table.
-$filters = ['fullname' => $fullname, 'contextlevel' => $contextlevel];
+$filters = [
+    'fullname' => $fullname,
+    'contextlevel' => $contextlevel,
+];
+if ($userid > 0) {
+    $filters['userid'] = $userid;
+}
 $table = new \tool_whoiswho\table\issues_table('tool_whoiswho_issues', $filters);
 $table->define_baseurl($url);
 $table->pagesize(25, 0);

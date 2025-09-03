@@ -195,6 +195,13 @@ class issues_table extends table_sql {
             $params['cxlevel'] = $contextlevel;
         }
 
+        // User ID filter.
+        $userid = (int) ($this->filters['userid'] ?? 0);
+        if ($userid > 0) {
+            $where[] = 'u.id = :userid';
+            $params['userid'] = $userid;
+        }
+
         return [implode(' AND ', $where), $params];
     }
 

@@ -7,11 +7,11 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="startedat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="Start timestamp"/>
-                <FIELD NAME="finishedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="Finish timestamp"/>
+                <FIELD NAME="finishedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Finish timestamp"/>
                 <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" DEFAULT="queued"/>
-                <FIELD NAME="initiatedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="User id or null"/>
-                <FIELD NAME="scopecontextid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="Optional root context of the scan"/>
-                <FIELD NAME="meta" TYPE="text" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="JSON: versions, counts, durations"/>
+                <FIELD NAME="initiatedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="User id or null"/>
+                <FIELD NAME="scopecontextid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Optional root context of the scan"/>
+                <FIELD NAME="meta" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON: versions, counts, durations"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -27,19 +27,19 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="fingerprint" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="scanid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null"
+                <FIELD NAME="scanid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"
                        COMMENT="Scan that first created the finding"/>
                 <FIELD NAME="type" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="cap_conflict, cap_overlap, ..."/>
                 <FIELD NAME="severity" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="capability" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" DEFAULT="null"/>
+                <FIELD NAME="capability" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="firstseenat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="lastseenat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="resolved" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
-                <FIELD NAME="resolvedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null"/>
-                <FIELD NAME="resolvedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" DEFAULT="null"/>
-                <FIELD NAME="details" TYPE="text" NOTNULL="false" SEQUENCE="false" DEFAULT="null" COMMENT="JSON payload with role maps and extras"/>
+                <FIELD NAME="resolvedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="resolvedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="details" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON payload with role maps and extras"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

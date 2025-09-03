@@ -60,6 +60,7 @@ $string['settings:scan_contextlevels'] = 'Context levels to scan';
 $string['settings:scan_contextlevels_desc'] = 'Limit scans to these context levels.';
 $string['settings:context:system'] = 'System context';
 $string['settings:context:course'] = 'Course context';
+$string['settings:context:module'] = 'Module context';
 
 // External pages.
 $string['externalpage:dashboard'] = 'Dashboard';
@@ -97,12 +98,21 @@ $string['users:dashboard'] = 'Users';
 $string['profilefield:dashboard'] = 'profile field';
 $string['overviewlinktitle:dashboard'] = 'More Details';
 
+// Users overview page.
+$string['title:users'] = 'Users overview';
+$string['heading:users'] = 'Users overview';
+$string['backtodashboard'] = 'Back to dashboard';
+$string['filter:withissues'] = 'Only users with issues';
+$string['issues'] = 'issues';
+
 // Table & filter labels.
 $string['col:issue'] = 'Issue';
+$string['col:issues'] = 'Issues';
 $string['col:profilefield'] = 'Profile field';
 $string['col:roles'] = 'All roles of user';
 $string['col:location'] = 'Location of issue';
 $string['col:action'] = 'Action';
+$string['col:allcapabilities'] = 'All Capabilities';
 
 $string['filter:fullname'] = 'Fullname contains';
 $string['filter:context'] = 'Context';

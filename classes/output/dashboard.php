@@ -67,6 +67,7 @@ class dashboard implements renderable, templatable {
         // first two fields are fixed others will be based on profile field
 
         $issuelink = new \moodle_url('/admin/tool/whoiswho/view/issues.php');
+        $userslink = new \moodle_url('/admin/tool/whoiswho/view/users.php');
 
         $items = [
             [
@@ -79,7 +80,7 @@ class dashboard implements renderable, templatable {
                 'cardheader' => get_string('users:dashboard', 'tool_whoiswho'),
                 'cardvalue' => '50',
                 'cardicon' => 'fa-users',
-                'overviewurl' => '',
+                'overviewurl' => $userslink->out(),
             ],
             [
                 'cardheader' => get_string('profilefield:dashboard', 'tool_whoiswho'),
